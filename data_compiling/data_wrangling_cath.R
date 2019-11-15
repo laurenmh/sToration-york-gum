@@ -1,0 +1,43 @@
+# THE WATER EXPERIMENT has both shade and soil P data and focal plant and neighbour info
+# but with a slightly different spatial design (25 by 25 quadrant in 50 by 50 plots, within block
+# at both Perejnori (north - dry) and Bendering (south - wet))  and flowercount will need 
+# to be extrapolated to seedcount - Cath 
+
+# THE SHADE EXPERIMENT is a bit weird - not really sure at all what is going on? - Cath 
+
+# THE HOI OBSERVATIONAL DATA is just in the south and has no soil phosphorus data - Cath 
+
+# SO doing some data wrangling to match the watering datatsets together in a nice format for modelling and go from there - Cath
+# TO RUN the following code, make sure compile_wateringexperiment.R has been run already 
+# water_neighbour needs to be made into wide form 
+water_spread <- water_neighbor
+water_spread <- water_spread %>% 
+  group_by_at(vars(-Number)) %>% # group by everything other than the value
+  mutate(row_id=1:n()) %>% ungroup() %>%  # build group index column. 
+  spread(Neighbor.sp, Number, fill = 0) %>% 
+  select(-row_id)  # drop the index
+
+# match the water_spread dataset with water_indiv (note the number of unique rows (individuals) 
+# already match - not sure why yet)
+water_full <- inner_join(water_spread, water_indiv, by = "Plot.ID.quadrant") 
+water_full <- water_full[, -grep(".y", colnames(water_full))]
+
+
+# need to join with environmental variables shade (canopy cover) and Colwell P
+# abiotic data is at plot level 
+water_full_env <- water_full
+abiotic <- water_abiotic
+abiotic <- rename(abiotic, Plot.ID.x = Plot.ID)
+water_full_env <- full_join(water_full_env, abiotic, by = "Plot.ID.x")
+
+# make shade into a category with low and high 
+plot(density(water_full_env$Canopy, na.rm = T)) # cutting low at < 0.4 for now 
+water_full_env <- water_full_env %>% mutate(shade=cut(Canopy, breaks=c(0, 0.4, Inf), labels=c("low","high")))
+table(water_full_env$shade)
+
+
+
+
+
+
+
