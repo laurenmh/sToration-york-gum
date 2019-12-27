@@ -3,7 +3,7 @@ library(tidyverse)
 ## Questions for Margie (or a closer read of the paper):
 # 1) Can we confirm the nesting design (my understanding is: Reserve > Block > Plot.ID > Quadrant)
 # 2) For water_indiv, what is the Plot column? (it's an integer, doesn't correspond to either Plot.ID or Quadrant)
-# 3) What are the focal species? (A, H, T, W)
+# 3) What are the focal species? (A, H, T, W) #Cath: these are A: Arctotheca calendula, H: Hypochaeris glabra, T: Trachymene cyanopetala, W: Waitzia accuminata
 
 ### Read in data from the watering experiment (Wainwright dataset)
 
