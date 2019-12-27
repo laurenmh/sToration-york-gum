@@ -29,11 +29,18 @@ water_full_env <- water_full
 abiotic <- water_abiotic
 abiotic <- rename(abiotic, Plot.ID.x = Plot.ID)
 water_full_env <- full_join(water_full_env, abiotic, by = "Plot.ID.x")
+# make a total.fecundity column 
+
+# save as a csv file to be called by Run_fecundity_model_cath.R
+write.csv(water_full_env, "water_full_env.csv")
 
 # make shade into a category with low and high 
 plot(density(water_full_env$Canopy, na.rm = T)) # cutting low at < 0.4 for now 
 water_full_env <- water_full_env %>% mutate(shade=cut(Canopy, breaks=c(0, 0.4, Inf), labels=c("low","high")))
 table(water_full_env$shade)
+
+#### Initial neighbour grouping code - this will be more sophisticated based on Oscar's strategy ####
+
 
 
 
