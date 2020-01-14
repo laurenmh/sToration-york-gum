@@ -5,10 +5,9 @@ data{
   int Intra[N];
   int Other[N];
   matrix[N,S] SpMatrix;
-  int<lower = 1> Block;
   int<lower = 1> Plot;
-  real<lower = 1> Phos[Block]; // soil Phosphorus (Colwell P) value (per Block) - being treated for now as continuous
-  real<lower = 1> Shade[Plot]; // shade (canopy cover) percentage (per Plot) - being treated for now as continuous
+  real<lower = 1>Phos[Plot];
+  real<lower = 1> Shade[Plot]; // shade (canopy cover)  per Plot, phos (Colwell P per block)- being treated for now as continuous
 }
 parameters{
   real<lower = 0> lambda;
@@ -36,8 +35,8 @@ model{
   Beta_2 ~ normal(0,1000);
   Beta_3 ~ normal(0,1000);
 
-  // implement the biological model
-  for(i in 1:N){
+  // implement the biological model 
+  for(i in 1:N){ // just not sure how to index this 
   lambda = Beta_1[1]*Phos[i] + Beta_2[1]*Shade[i] + Beta_3[1]*Phos[i]*Shade[i];
   alpha_intra = Beta_1[2]*Phos[i] + Beta_2[2]*Shade[i] + Beta_3[2]*Phos[i]*Shade[i];
   alpha_inter = alpha_mean + alpha_sp;
