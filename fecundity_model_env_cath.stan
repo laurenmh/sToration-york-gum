@@ -5,9 +5,9 @@ data{
   int Intra[N];
   int Other[N];
   matrix[N,S] SpMatrix;
-  int<lower = 1> Plot;
-  real<lower = 1>Phos[Plot];
-  real<lower = 1> Shade[Plot]; // shade (canopy cover)  per Plot, phos (Colwell P per block)- being treated for now as continuous
+  //int<lower = 1> Plot;
+  real<lower = 1>Phos[N];
+  real<lower = 1> Shade[N]; // shade (canopy cover)  per Plot, phos (Colwell P per block)- being treated for now as continuous
 }
 parameters{
   real<lower = 0> lambda;

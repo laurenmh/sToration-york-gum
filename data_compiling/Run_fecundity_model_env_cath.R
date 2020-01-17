@@ -13,7 +13,7 @@ rstan_options(auto_write = TRUE)
 # Load in the data and sort it
 SpData <- read.csv("water_full_env.csv")
 SpDataFocal <- subset(SpData, SpData$Focal.sp.x=="A")
-NeededNames <- colnames(SpDataFocal)[c(6,10:55,58, 60, 61)] 
+NeededNames <- colnames(SpDataFocal)[c(10:69,71, 73,74)] 
 ModData <- subset(SpData, select = NeededNames)
 ModData <- na.omit(ModData)
 
@@ -21,14 +21,14 @@ ModData <- na.omit(ModData)
 N <- as.integer(dim(ModData)[1])
 Fecundity <- as.integer(ModData$Number.flowers.total)
 Intra <- as.integer(ModData$Arctotheca.calendula)
-Plot <- as.integer(ModData$Plot.ID.quadrant)
+#Plot <- as.integer(ModData$Plot.ID.quadrant)
 Shade <- ModData$Canopy
 Phos <- ModData$Colwell.P
 Other <- rep(0, N)
 Threshold <- 13
 
 # Create the model matrix
-SpMatrixOriginal <- subset(ModData, select = setdiff(colnames(ModData), c("Number.flowers.total", "Arctotheca.calendula", "Plot.ID.quadrant", "Colwell.P", "Canopy"))) # add the other non competitor columns here
+SpMatrixOriginal <- subset(ModData, select = setdiff(colnames(ModData), c("Number.flowers.total", "Arctotheca.calendula","Colwell.P", "Canopy"))) # add the other non competitor columns here
 SpMatrixOriginal <- as.matrix(SpMatrixOriginal)
 SpTotals <- colSums(SpMatrixOriginal)
 S <- sum(SpTotals > Threshold)

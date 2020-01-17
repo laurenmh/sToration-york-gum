@@ -20,12 +20,13 @@ water_spread <- water_spread %>%
 # match the water_spread dataset with water_indiv (note the number of unique rows (individuals) 
 # already match - not sure why yet)
 water_full <- inner_join(water_spread, water_indiv, by = "Plot.ID.quadrant") 
-water_full <- water_full[, -grep(".y", colnames(water_full))]
+NeededNames <- colnames(water_full)[c(1:69, 78:79)] 
+water_full_mod <- subset(water_full, select = NeededNames)
 
 
 # need to join with environmental variables shade (canopy cover) and Colwell P
 # abiotic data is at plot level 
-water_full_env <- water_full
+water_full_env <- water_full_mod
 abiotic <- water_abiotic
 abiotic <- rename(abiotic, Plot.ID.x = Plot.ID)
 water_full_env <- full_join(water_full_env, abiotic, by = "Plot.ID.x")
