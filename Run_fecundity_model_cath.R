@@ -11,8 +11,7 @@ rstan_options(auto_write = TRUE)
 
 # Load in the data and sort it
 SpData <- read.csv("water_full_env.csv")
-#SpDataFocal <- subset(SpData, SpData$Focal.sp.x=="A")
-SpDataFocal <- subset(SpData, SpData$Focal.sp.x=="T")
+SpDataFocal <- subset(SpData, SpData$Focal.sp.x=="A")
 NeededNames <- colnames(SpDataFocal)[c(10:69,71)] 
 ModData <- subset(SpData, select = NeededNames)
 ModData <- na.omit(ModData)
@@ -26,11 +25,10 @@ Other <- rep(0, N)
 Threshold <- 14
 
 # Create the model matrix
-#SpMatrixOriginal <- subset(ModData, select = setdiff(colnames(ModData), c("Number.flowers.total", "Arctotheca.calendula"))) 
-SpMatrixOriginal <- subset(ModData, select = setdiff(colnames(ModData), c("Number.flowers.total", "Trachymene cyanopetala"))) 
+SpMatrixOriginal <- subset(ModData, select = setdiff(colnames(ModData), c("Number.flowers.total", "Arctotheca.calendula"))) 
 SpTotals <- colSums(SpMatrixOriginal)
 S <- sum(SpTotals > Threshold)
-SpMatrix <- matrix(data = NA, nrow = N, ncol = S)
+SpMatrix <- matrix(data = NA, nrow = N, ncol = S) # need to add in species names somewhere here 
 k <- 1
 for(s in 1:ncol(SpMatrixOriginal)){
   if(SpTotals[s] > Threshold){
