@@ -11,10 +11,11 @@ rstan_options(auto_write = TRUE)
 
 # Load in the data and sort it
 SpData <- read.csv("water_full_env.csv")
+SpData <- na.omit(SpData)
 SpDataFocal <- subset(SpData, SpData$Focal.sp.x=="A")
 NeededNames <- colnames(SpDataFocal)[c(10:69,71)] 
 ModData <- subset(SpData, select = NeededNames)
-ModData <- na.omit(ModData)
+
 
 # Determine the number of data points
 N <- as.integer(dim(ModData)[1])
@@ -23,6 +24,9 @@ Intra <- as.integer(ModData$Arctotheca.calendula)
 ntra <- as.integer(ModData$Tra)
 Other <- rep(0, N)
 Threshold <- 14
+
+#shade = SpData$Canopy
+#phos = SpData$Colwell.P
 
 # Create the model matrix
 SpMatrixOriginal <- subset(ModData, select = setdiff(colnames(ModData), c("Number.flowers.total", "Arctotheca.calendula"))) 
@@ -41,7 +45,7 @@ for(s in 1:ncol(SpMatrixOriginal)){
 
 # Do a preliminary fit to compile the stan model and check for convergence, mixing,
 #    autocorrelation, etc.
-PrelimFit <- stan(file = "fecundity_model_cath.stan", data = c("N", "S", "Fecundity", "Intra", "SpMatrix", "Other"),
+PrelimFit <- stan(file = "fecundity_model_env_cath.stan", data = c("N", "S", "Fecundity", "Intra", "SpMatrix", "Other"), #"shade", "phos"
                   iter = 6000, chains = 3, thin = 1, control = list(adapt_delta = 0.8, max_treedepth = 10))
 PrelimFit
 plot(PrelimFit, show_density = FALSE, ci_level = 0.5, outer_level = 0.95, fill_color = "salmon", pars = c("alpha_intra", "alpha_mean", "alpha_sp"))
