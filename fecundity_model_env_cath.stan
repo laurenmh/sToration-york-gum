@@ -14,25 +14,26 @@ data{
 
 parameters{
   real<lower = 0> lambda;
-  vector[N] alpha_intra;
-  vector[N] alpha_mean;
   vector[S] alpha_sp;
   vector[4] b; // for alpha_mean enviro regression parameters 
   vector[4] c; // for alpha_intra enviro regression parameters
 }
 
 transformed parameters{
+  vector[N] alpha_mean;
+  vector[N] alpha_intra;
   for(i in 1:N){
-  alpha_mean = b[1] + b[2]*shade[i] + b[3]*phos[i] + b[4]*shade[i]*phos[i];
-  alpha_intra = c[1] + c[2]*shade[i] + c[3]*phos[i] + c[4]*shade[i]*phos[i];
+    alpha_mean[i] = b[1] + b[2]*shade[i] + b[3]*phos[i] + b[4]*shade[i]*phos[i];
+    alpha_intra[i] = c[1] + c[2]*shade[i] + c[3]*phos[i] + c[4]*shade[i]*phos[i];
   }
+}
 
 model{
   // create a vector of predictions, a baseline standard deviation for priors on alpha_sp, 
   //    an object to hold the sums of interactions, and the realized interspecific alphas
   vector[N] F_hat;
   real sigma_sp[S];
-  vector[N] interaction_effects; //matrix aswell?
+  matrix[N,S] interaction_effects;
   matrix[N,S] alpha_inter;
 
   // set priors
@@ -44,12 +45,12 @@ model{
   c ~ normal(0, 1000);
 
   // implement the biological model
-  
- 
   for(i in 1:N){ 
-  alpha_inter = alpha_mean + alpha_sp; // change to reference alpha inter for each row of data based on changing alpha_mean
-  interaction_effects = SpMatrix * alpha_inter[i]; 
-  F_hat[i] = lambda * exp(alpha_intra[i] * Intra[i] + interaction_effects[i] + alpha_mean[i] * Other[i]);
+    for(s in 1:S){
+      alpha_inter[i,s] = alpha_mean[i] + alpha_sp[s];
+      interaction_effects[i,s] = SpMatrix[i,s] * alpha_inter[i,s];
+    }
+    F_hat[i] = lambda * exp(alpha_intra[i] * Intra[i] + sum(interaction_effects[i,]) + alpha_mean[i] * Other[i]);
   }
   Fecundity ~ poisson(F_hat);
 }
