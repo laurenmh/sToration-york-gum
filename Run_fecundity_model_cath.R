@@ -16,6 +16,8 @@ SpDataFocal <- subset(SpData, SpData$Focal.sp.x=="A")
 NeededNames <- colnames(SpDataFocal)[c(10:69,71)]
 ModData <- subset(SpData, select = NeededNames)
 Species <- c(names(SpDataFocal[c(10:69)]))
+
+
 Species.ID <- as.data.frame(Species)
 Species.ID$Included <- rep(1,length(Species))
 
@@ -49,7 +51,7 @@ for(s in 1:ncol(SpMatrixOriginal)){
 # Do a preliminary fit to compile the stan model and check for convergence, mixing,
 #    autocorrelation, etc.
 PrelimFit <- stan(file = "fecundity_model_env_cath.stan", data = c("N", "S", "Fecundity", "Intra", "SpMatrix", "Other", "shade", "phos"),
-                  iter = 6000, chains = 3, thin = 1, control = list(adapt_delta = 0.8, max_treedepth = 10))
+                  iter = 1000, chains = 3, thin = 1, control = list(adapt_delta = 0.8, max_treedepth = 10))
 PrelimFit
 plot(PrelimFit, show_density = FALSE, ci_level = 0.5, outer_level = 0.95, fill_color = "salmon", pars = c("alpha_intra", "alpha_mean", "alpha_sp"))
 
