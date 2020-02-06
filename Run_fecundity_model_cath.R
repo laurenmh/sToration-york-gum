@@ -12,9 +12,11 @@ rstan_options(auto_write = TRUE)
 # Load in the data and sort it
 SpData <- read.csv("water_full_env.csv")
 SpData <- na.omit(SpData)
-SpDataFocal <- subset(SpData, SpData$Focal.sp.x=="A")
+SpDataFocal <- subset(SpData, SpData$Focal.sp.x=="W")
+SpDataFocal <- SpDataFocal %>% mutate_at(c("Canopy", "Colwell.P"), ~(scale(.) %>% as.vector))
+
 NeededNames <- colnames(SpDataFocal)[c(10:69,71)]
-ModData <- subset(SpData, select = NeededNames)
+ModData <- subset(SpDataFocal, select = NeededNames)
 Species <- c(names(SpDataFocal[c(10:69)]))
 
 
@@ -30,8 +32,8 @@ ntra <- as.integer(ModData$Tra)
 Other <- rep(0, N)
 Threshold <- 14
 
-shade = SpData$Canopy
-phos = SpData$Colwell.P
+shade = SpDataFocal$Canopy
+phos = SpDataFocal$Colwell.P
 
 # Create the model matrix
 SpMatrixOriginal <- subset(ModData, select = setdiff(colnames(ModData), c("Number.flowers.total", "Arctotheca.calendula"))) 

@@ -14,16 +14,17 @@ SpData <- read.csv("water_full_env.csv")
 # We should think carefully about this step. na.omit() will omit any row where any of the data values are NA,
 #   but we might now want that (e.g. if the NA is in a column we don't care about). 
 SpData <- na.omit(SpData)     
-SpDataFocal <- subset(SpData, Focal.sp.x == "A")
+SpDataFocal <- subset(SpData, Focal.sp.x == "W")
+SpDataFocal <- SpDataFocal %>% mutate_at(c("Canopy", "Colwell.P"), ~(scale(.) %>% as.vector)) # not working?
 
 # From here we need to calculate and create the Intra and Other vectors, the
 #   SpMatrix of abundances for all species we are including, and other necessary
 #   objects like N, S, shade, phos, and Fecundity
-Intra <- as.integer(SpDataFocal$Arctotheca.calendula)
+Intra <- as.integer(SpDataFocal$Waitzia.acuminata)
 N <- as.integer(dim(SpDataFocal)[1])
 Fecundity <- as.integer(SpDataFocal$Number.flowers.total)
 shade <- SpDataFocal$Canopy
-phos <- SpData$Colwell.P
+phos <- SpDataFocal$Colwell.P
 
 # This chunk of the code will implement your solution for tracking species identity
 Species <- names(SpDataFocal[10:69])
@@ -59,7 +60,14 @@ sum(Species.ID$Included)
 # Do a preliminary fit to compile the stan model and check for convergence, mixing,
 #    autocorrelation, etc.
 PrelimFit <- stan(file = "fecundity_model_env_cath.stan", data = c("N", "S", "Fecundity", "Intra", "SpMatrix", "Other", "shade", "phos"),
-                  iter = 6000, chains = 3, thin = 1, control = list(adapt_delta = 0.8, max_treedepth = 10))
+                  iter = 3000, chains = 3, thin = 1, control = list(adapt_delta = 0.8, max_treedepth = 10))
+# Things I'm trying 
+# increasing iterations: 
+# increasing thinning: 
+# adapt_delta:
+
+
+
 PrelimFit
 plot(PrelimFit, show_density = FALSE, ci_level = 0.5, outer_level = 0.95, fill_color = "salmon", pars = c("alpha_sp"))
 plot(PrelimFit, show_density = FALSE, ci_level = 0.5, outer_level = 0.95, fill_color = "salmon", pars = c("lambda", "b", "c"))
