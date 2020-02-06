@@ -61,7 +61,7 @@ sum(Species.ID$Included)
 # Do a preliminary fit to compile the stan model and check for convergence, mixing,
 #    autocorrelation, etc.
 PrelimFit <- stan(file = "fecundity_model_env_cath.stan", data = c("N", "S", "Fecundity", "Intra", "SpMatrix", "Other", "shade", "phos"),
-                  iter = 1000, chains = 3, thin = 3, control = list(adapt_delta = 0.8, max_treedepth = 15)) #control = list(adapt_delta = 0.8, max_treedepth = 10))
+                  iter = 1000, chains = 3, thin = 3, control = list(adapt_delta = 0.8, max_treedepth = 10)) #control = list(adapt_delta = 0.8, max_treedepth = 10))
 # Things I'm trying 
 # thinning to 3 at 2000 iter and control adapt delta and treedepth: best so far Rhat 1-2
 # adapt_delta: 0.8
