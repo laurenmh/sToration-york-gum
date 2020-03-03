@@ -4,16 +4,16 @@
 # From Topher 
 # Trial run of the "grand mean" model of species interactions. 
 #    NOTE: We should come up with a better name at some point
-
+rm(list = ls())
 library(rstan)
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 
 # Load in the data and sort it
 SpData <- read.csv("water_full_env.csv")
-# We should think carefully about this step. na.omit() will omit any row where any of the data values are NA,
-#   but we might now want that (e.g. if the NA is in a column we don't care about). 
-SpData <- na.omit(SpData)     
+# check NA's in neighbour columns 
+SpData <- subset(SpData, select = -c(X.NA., Seedcount.extrapolated.integer))
+SpData <- na.omit(SpData) 
 SpDataFocal <- subset(SpData, Focal.sp.x == "W")
 library(tidyverse)
 SpDataFocal <- SpDataFocal %>% mutate_at(c("Canopy", "Colwell.P"), ~(scale(.) %>% as.vector)) # not working?
@@ -28,13 +28,14 @@ shade <- SpDataFocal$Canopy
 phos <- SpDataFocal$Colwell.P
 
 # This chunk of the code will implement your solution for tracking species identity
-Species <- names(SpDataFocal[10:69])
+Species <- names(SpDataFocal[10:69]) 
+Species <- setdiff(Species, "Waitzia.acuminata")
 Species.ID <- as.data.frame(Species)
 Species.ID$Included <- rep(1,length(Species))
 Species.ID$Column <- rep(NA, length(Species)) # The data frame is a great idea. We can also include a column for index value so we can easily
 
 # Now, go through the interspecific abundances to initially filter out any that have too low of an abundance
-Threshold <- 14
+Threshold <- 18
 Other <- rep(0, N)
 SpMatrixOriginal <- subset(SpDataFocal, select = Species)
 SpTotals <- colSums(SpMatrixOriginal)
@@ -61,11 +62,8 @@ sum(Species.ID$Included)
 # Do a preliminary fit to compile the stan model and check for convergence, mixing,
 #    autocorrelation, etc.
 PrelimFit <- stan(file = "fecundity_model_env_cath.stan", data = c("N", "S", "Fecundity", "Intra", "SpMatrix", "Other", "shade", "phos"),
-                  iter = 1000, chains = 3, thin = 3, control = list(adapt_delta = 0.8, max_treedepth = 10)) #control = list(adapt_delta = 0.8, max_treedepth = 10))
-# Things I'm trying 
-# thinning to 3 at 2000 iter and control adapt delta and treedepth: best so far Rhat 1-2
-# adapt_delta: 0.8
-# on advice from warning message to inrease max treepdepth above 10 (trying 15): 
+                  iter = 1000, chains = 3, thin = 3, control = list(adapt_delta = 0.95, max_treedepth = 10)) #control = list(adapt_delta = 0.8, max_treedepth = 10))
+999
 
 PrelimFit
 
@@ -73,7 +71,7 @@ plot(PrelimFit, show_density = FALSE, ci_level = 0.5, outer_level = 0.95, fill_c
 plot(PrelimFit, show_density = FALSE, ci_level = 0.5, outer_level = 0.95, fill_color = "salmon", pars = c("lambda", "b", "c"))
 
 # Diagnostic plots
-pairs(PrelimFit, pars = c("lambda", "b", "c"))
+pairs(PrelimFit, pars = c("lambda", "alpha_sp[1]", "alpha_sp[2]"))
 traceplot(PrelimFit, pars = c("lambda", "b", "c"))
 # autocorrelation of the MCMC samples
 quartz()
