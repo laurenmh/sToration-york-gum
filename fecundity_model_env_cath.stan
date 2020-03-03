@@ -13,15 +13,17 @@ data{
 }
 
 parameters{
-  real<lower = 0> lambda;
+  real lambda_0;
   vector[S] alpha_sp;
   vector[4] b; // for alpha_mean enviro regression parameters 
   vector[4] c; // for alpha_intra enviro regression parameters
 }
 
 transformed parameters{
+  real<lower = 0> lambda;
   vector[N] alpha_mean;
   vector[N] alpha_intra;
+  lambda = exp(lambda_0);
   for(i in 1:N){
     alpha_mean[i] = b[1] + b[2]*shade[i] + b[3]*phos[i] + b[4]*shade[i]*phos[i];
     alpha_intra[i] = c[1] + c[2]*shade[i] + c[3]*phos[i] + c[4]*shade[i]*phos[i];
@@ -40,7 +42,8 @@ model{
   // alpha_intra ~ normal(0, 1000);
   // alpha_mean ~ normal(0, 1000);
   alpha_sp ~ normal(0, 1000);
-  lambda ~ gamma(0.001, 0.001);
+  lambda ~ normal(0,1000);
+  //lambda ~ gamma(0.001, 0.001);
   b ~ normal(0, 1000);
   c ~ normal(0, 1000);
 
