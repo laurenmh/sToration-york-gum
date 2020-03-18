@@ -1,9 +1,6 @@
 #### Running Fecundity model 
 # This script comes after data_wrangling_cath.R and pairs with stan file fecundity_model_cath.stan 
 
-# From Topher 
-# Trial run of the "grand mean" model of species interactions. 
-#    NOTE: We should come up with a better name at some point
 rm(list = ls())
 library(rstan)
 options(mc.cores = parallel::detectCores())
@@ -11,12 +8,11 @@ rstan_options(auto_write = TRUE)
 
 # Load in the data and sort it
 SpData <- read.csv("water_full_env.csv")
-# check NA's in neighbour columns 
 SpData <- subset(SpData, select = -c(X.NA., Seedcount.extrapolated.integer))
 SpData <- na.omit(SpData) 
 SpDataFocal <- subset(SpData, Focal.sp.x == "W")
 library(tidyverse)
-SpDataFocal <- SpDataFocal %>% mutate_at(c("Canopy", "Colwell.P"), ~(scale(.) %>% as.vector)) # not working?
+SpDataFocal <- SpDataFocal %>% mutate_at(c("Canopy", "Colwell.P"), ~(scale(.) %>% as.vector)) 
 
 # From here we need to calculate and create the Intra and Other vectors, the
 #   SpMatrix of abundances for all species we are including, and other necessary
@@ -35,7 +31,7 @@ Species.ID$Included <- rep(1,length(Species))
 Species.ID$Column <- rep(NA, length(Species)) # The data frame is a great idea. We can also include a column for index value so we can easily
 
 # Now, go through the interspecific abundances to initially filter out any that have too low of an abundance
-Threshold <- 18
+Threshold <- 70
 Other <- rep(0, N)
 SpMatrixOriginal <- subset(SpDataFocal, select = Species)
 SpTotals <- colSums(SpMatrixOriginal)
@@ -61,27 +57,28 @@ sum(Species.ID$Included)
 
 # Do a preliminary fit to compile the stan model and check for convergence, mixing,
 #    autocorrelation, etc.
-PrelimFit <- stan(file = "fecundity_model_env_cath.stan", data = c("N", "S", "Fecundity", "Intra", "SpMatrix", "Other", "shade", "phos"),
-                  iter = 1000, chains = 3, thin = 3, control = list(adapt_delta = 0.95, max_treedepth = 10)) #control = list(adapt_delta = 0.8, max_treedepth = 10))
-999
+PrelimFit <- stan(file = "BH_fecundity_model_env_cath.stan", data = c("N", "S", "Fecundity", "Intra", "SpMatrix", "Other", "shade", "phos"),
+                  iter = 6000 , chains = 3, control = list(adapt_delta = 0.9, max_treedepth=13))
 
-PrelimFit
+
+PrelimFit # R hats too high 
+
+# Diagnostic plots
+pairs(PrelimFit, pars = c("lambda", "alpha_sp[1]", "alpha_sp[2]", "alpha_sp[3]", "alpha_sp[4]")) # some weird pattern happening here
+traceplot(PrelimFit, pars = c("lambda_0", "b", "c"))
+
+# autocorrelation of the MCMC samples
+# Now extract the posteriors
+posteriors <- rstan::extract(PrelimFit)
+# Now plot each posterior
+acf(posteriors$lambda) # too much autocorrelation 
+acf(posteriors$alpha_intra)
+acf(posteriors$alpha_mean)
+
 
 plot(PrelimFit, show_density = FALSE, ci_level = 0.5, outer_level = 0.95, fill_color = "salmon", pars = c("alpha_sp"))
 plot(PrelimFit, show_density = FALSE, ci_level = 0.5, outer_level = 0.95, fill_color = "salmon", pars = c("lambda", "b", "c"))
 
-# Diagnostic plots
-pairs(PrelimFit, pars = c("lambda", "alpha_sp[1]", "alpha_sp[2]"))
-traceplot(PrelimFit, pars = c("lambda", "b", "c"))
-# autocorrelation of the MCMC samples
-quartz()
-par(mfcol = c(2,2))
-# Now extract the posteriors
-posteriors <- extract(PrelimFit)
-# Now plot each posterior
-acf(posteriors$lambda)
-acf(posteriors$alpha_intra)
-acf(posteriors$alpha_mean)
 
 # Once the chains have converged with no autocorrelation, sort through which
 #    of the alpha_sp 95% credible intervals overlap 0 (i.e. no effect).

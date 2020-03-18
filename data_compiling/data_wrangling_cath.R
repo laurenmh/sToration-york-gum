@@ -3,11 +3,8 @@
 # at both Perejnori (north - dry) and Bendering (south - wet))  and flowercount will need 
 # to be extrapolated to seedcount - Cath 
 
-# THE SHADE EXPERIMENT is a bit weird - not really sure at all what is going on? - Cath 
 
-# THE HOI OBSERVATIONAL DATA is just in the south and has no soil phosphorus data - Cath 
-
-# SO doing some data wrangling to match the watering datatsets together in a nice format for modelling and go from there - Cath
+# SO doing some data wrangling to match the watering datatsets together in a nice format for modelling - Cath
 # TO RUN the following code, make sure compile_wateringexperiment.R has been run already 
 # water_neighbour needs to be made into wide form 
 water_spread <- water_neighbor
@@ -20,14 +17,13 @@ water_spread <- water_spread %>%
 # # match the water_spread dataset with water_indiv (note the number of unique rows (individuals))
 # dim(water_spread)
 # dim(water_indiv)
-# # what values aren't in water_indiv that are in water_spread 
+
 # water_spread$Plot.ID[!(water_spread$Plot.ID %in% water_indiv$Plot.ID)]
 
 water_full <- inner_join(water_spread, water_indiv, by = "Plot.ID.quadrant") 
 dim(water_full)
 NeededNames <- colnames(water_full)[c(1:69, 78:79)] 
 water_full_mod <- subset(water_full, select = NeededNames)
-
 
 # need to join with environmental variables shade (canopy cover) and Colwell P
 # abiotic data is at plot level 

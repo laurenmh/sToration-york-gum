@@ -42,7 +42,7 @@ model{
   // alpha_intra ~ normal(0, 1000);
   // alpha_mean ~ normal(0, 1000);
   alpha_sp ~ normal(0, 1000);
-  lambda ~ normal(0,1000);
+  lambda_0 ~ normal(0,1000);
   //lambda ~ gamma(0.001, 0.001);
   b ~ normal(0, 1000);
   c ~ normal(0, 1000);
