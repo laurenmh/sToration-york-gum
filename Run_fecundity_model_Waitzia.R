@@ -31,7 +31,7 @@ Species.ID$Included <- rep(1,length(Species))
 Species.ID$Column <- rep(NA, length(Species)) # The data frame is a great idea. We can also include a column for index value so we can easily
 
 # Now, go through the interspecific abundances to initially filter out any that have too low of an abundance
-Threshold <- 70
+Threshold <- 15
 Other <- rep(0, N)
 SpMatrixOriginal <- subset(SpDataFocal, select = Species)
 SpTotals <- colSums(SpMatrixOriginal)
@@ -57,14 +57,14 @@ sum(Species.ID$Included)
 
 # Do a preliminary fit to compile the stan model and check for convergence, mixing,
 #    autocorrelation, etc.
-PrelimFit <- stan(file = "BH_fecundity_model_env_cath.stan", data = c("N", "S", "Fecundity", "Intra", "SpMatrix", "Other", "shade", "phos"),
-                  iter = 6000 , chains = 3, control = list(adapt_delta = 0.9, max_treedepth=13))
+PrelimFit <- stan(file = "Old models/fecundity_model_shade_cath.stan", data = c("N", "S", "Fecundity", "Intra", "SpMatrix", "Other", "shade", "phos"),
+                  iter = 6000 , chains = 3, control = list(max_treedepth=13))
+#control = list(adapt_delta=0.999, max_treedepth=15)
 
-
-PrelimFit # R hats too high 
+PrelimFit
 
 # Diagnostic plots
-pairs(PrelimFit, pars = c("lambda", "alpha_sp[1]", "alpha_sp[2]", "alpha_sp[3]", "alpha_sp[4]")) # some weird pattern happening here
+pairs(PrelimFit, pars = c("lambda", "alpha_sp[1]", "alpha_sp[2]", "alpha_sp[3]", "alpha_sp[4]")) 
 traceplot(PrelimFit, pars = c("lambda_0", "b", "c"))
 
 # autocorrelation of the MCMC samples
