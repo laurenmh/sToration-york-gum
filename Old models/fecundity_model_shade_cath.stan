@@ -26,7 +26,7 @@ transformed parameters{
   lambda = exp(lambda_0);
   for(i in 1:N){
     alpha_mean[i] = b[1] + b[2]*shade[i];
-    alpha_intra[i] = c[1] + c[2]*shade[i];
+    alpha_intra[i] = exp(c[1] + c[2]*shade[i]);
   }
 }
 
@@ -50,7 +50,7 @@ model{
   // implement the biological model
   for(i in 1:N){ 
     for(s in 1:S){
-      alpha_inter[i,s] = alpha_mean[i] + alpha_sp[s];
+      alpha_inter[i,s] = exp(alpha_mean[i] + alpha_sp[s]);
       interaction_effects[i,s] = SpMatrix[i,s] * alpha_inter[i,s];
     }
     F_hat[i] = lambda/(1+alpha_intra[i] * Intra[i] + sum(interaction_effects[i,]) + alpha_mean[i] * Other[i]);

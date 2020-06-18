@@ -13,7 +13,7 @@ data{
 }
 
 parameters{
-  real lambda;
+  real<lower = 1> lambda; 
   vector[S] alpha_sp;
   vector[3] b; // for alpha_mean enviro regression parameters 
   vector[3] c; // for alpha_intra enviro regression parameters

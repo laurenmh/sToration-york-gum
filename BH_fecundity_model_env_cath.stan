@@ -9,14 +9,14 @@ data{
   int Other[N];
   matrix[N,S] SpMatrix;
   vector[N] shade; // make these in R from dataset
-  vector[N] phos;
+  //vector[N] phos;
 }
 
 parameters{
   real lambda_0;
   vector[S] alpha_sp;
-  vector[3] b; // for alpha_mean enviro regression parameters 
-  vector[3] c; // for alpha_intra enviro regression parameters
+  vector[2] b; // for alpha_mean enviro regression parameters 
+  vector[2] c; // for alpha_intra enviro regression parameters
 }
 
 transformed parameters{
@@ -25,8 +25,8 @@ transformed parameters{
   vector[N] alpha_intra;
   lambda = exp(lambda_0); //exp to restrict alphas to competitive 
   for(i in 1:N){
-    alpha_mean[i] = b[1] + b[2]*shade[i] + b[3]*phos[i]; //+ b[4]*shade[i]*phos[i]; //take out the interaction effects 
-    alpha_intra[i] = exp(c[1] + c[2]*shade[i] + c[3]*phos[i]); // + c[4]*shade[i]*phos[i]); 
+    alpha_mean[i] = b[1] + b[2]*shade[i]; //+ b[4]*shade[i]*phos[i]; //take out the interaction effects 
+    alpha_intra[i] = exp(c[1] + c[2]*shade[i]); // + c[4]*shade[i]*phos[i]); 
   } //exp to restrict alphas to competitive 
 }
 
@@ -53,7 +53,7 @@ model{
       alpha_inter[i,s] = exp(alpha_mean[i] + alpha_sp[s]);
       interaction_effects[i,s] = SpMatrix[i,s] * alpha_inter[i,s];
     }
-    F_hat[i] = lambda / (1 + alpha_intra[i] * Intra[i] + sum(interaction_effects[i,]) + exp(alpha_mean[i]) * Other[i]);
+    F_hat[i] = lambda/(1+alpha_intra[i] * Intra[i] + sum(interaction_effects[i,]) + exp(alpha_mean[i]) * Other[i]);
   }
   Fecundity ~ poisson(F_hat);
 }

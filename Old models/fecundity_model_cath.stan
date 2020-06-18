@@ -36,7 +36,7 @@ model{
   lambda_0 ~ normal(0, 1000);
 
   // implement the biological model
-  alpha_inter = alpha_mean + alpha_sp;
+  alpha_inter = exp(alpha_mean + alpha_sp);
   interaction_effects = SpMatrix * alpha_inter;
   for(i in 1:N){
     F_hat[i] = lambda/(1+alpha_intra * Intra[i] + interaction_effects[i] + alpha_mean * Other[i]);
