@@ -8,11 +8,15 @@ data{
   int Intra[N];
   int Other[N];
   matrix[N,S] SpMatrix;
+  vector[N] phos; // make these in R from dataset
+  //vector[N] phos;
 }
 
 parameters{
   real lambda_0;
   vector[S] alpha_sp;
+  vector[2] b; // for alpha_mean enviro regression parameters 
+  vector[2] c; // for alpha_intra enviro regression parameters
 }
 
 transformed parameters{
@@ -20,6 +24,10 @@ transformed parameters{
   vector[N] alpha_mean;
   vector[N] alpha_intra;
   lambda = exp(lambda_0); //exp to restrict alphas to competitive 
+  for(i in 1:N){
+    alpha_mean[i] = b[1] + b[2]*phos[i]; //+ b[4]*shade[i]*phos[i]; //take out the interaction effects 
+    alpha_intra[i] = exp(c[1] + c[2]*phos[i]); // + c[4]*shade[i]*phos[i]); 
+  } //exp to restrict alphas to competitive 
 }
 
 model{
@@ -35,6 +43,9 @@ model{
   // alpha_mean ~ normal(0, 1000);
   alpha_sp ~ normal(0, 1000);
   lambda_0 ~ normal(0, 1000);
+  //lambda ~ gamma(0.001, 0.001);
+  b ~ normal(0, 1000);
+  c ~ normal(0, 1000);
 
   // implement the biological model
   for(i in 1:N){ 
