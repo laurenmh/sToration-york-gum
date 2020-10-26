@@ -51,10 +51,12 @@ for (e in 1:ncol(env_gradient)) {
 for (r in 1:plots) {
   for (x in 1:posteriors) {
     #x <- sample(seq(1, 9000),1)
+    #log_a_eij <- list()
     log_a_eij <- alphas[x,1]+Inclusion_ij*waac.phos$alpha_hat_ij[x,,]+ (alphas[x,2]+Inclusion_eij*waac.phos$alpha_hat_eij[x,,])*env_gradient[r,e] 
     
     #Gives a 2x45 matrix of log_alpha_e,i,j for speciesxlocation
-    a_eij <- exp(log_a_eij[reserve[r],]) #to get your alpha term for each environmental condition and each competitor
+    #a_eij <- list()
+    a_eij <- exp(log_a_eij[reserve[r],e]) #to get your alpha term for each environmental condition and each competitor
     
     
     y <- sample(seq(1,4500),1)
@@ -80,9 +82,13 @@ for (r in 1:plots) {
   print(r)
   }
 }
-hist(waac.into.observed[,,1], xlim=c(-2,2))
-hist(waac.into.observed[,,2], xlim=c(-2,2))
-hist(waac.into.observed[,,3], xlim=c(-2,3))
-hist(waac.into.observed[,,4], xlim=c(-2,5))
+
+
+# plots, posteriors, env gradient 
+
+waac.into.observed[1,1,]
+
+
+
 
 
