@@ -40,8 +40,11 @@ write.csv(water_full_env, "water_full_env.csv")
 # plot(density(water_full_env$Canopy, na.rm = T)) # cutting low at < 0.4 for now 
 # water_full_env <- water_full_env %>% mutate(shade=cut(Canopy, breaks=c(0, 0.4, Inf), labels=c("low","high")))
 # table(water_full_env$shade)
-#
 
+data <- read.csv("water_full_env.csv")
+length(grep("W", unique(data$Plot.ID.x)))
+length(grep("A", unique(data$Plot.ID.x)))
+73+63
 
 
 
