@@ -40,15 +40,17 @@ alphas = arca.phos$alphas
 # Bendering --------------------------------------------------------------------------------------------
 colnames(SpMatrix) <- SpNames
 # pick the natives
-# subset(SpMatrix, select=c("Angianthus.tomentosus", "Brachyscome.iberidifolia", "Crassula.colorata.or.exserta", "Daucus.glochidiatus", "Gilberta.tenuifolia",
-#                                   "Gonocarpus.nodulosus", "Goodenia.berardiana", "Haloragis.odontocarpa", "Hyalosperma.glutinosum.subsp.glutinosum", "Hydrocotyle.pilifera", 
-#                                   "Lawrencella.rosea", "Nicotiana.rotundifolia", "Plantago.debilis", "Podolepis.canescens", "Podotheca.gnaphalioides", "Rhodanthe.laevis",
-#                                   "Rhodanthe.manglesii", "Rhodanthe.polycephala", "Schoenia.cassiniana", "Schoenus.nanus", "Senecio.glossanthus", "Trachymene.cyanopetala",
-#                                   "Velleia.cycnopotamica", "Velleia.rosea", "Waitzia.acuminata"))
+nat.stems <-  subset(SpMatrix, select=c("Angianthus.tomentosus", "Brachyscome.iberidifolia", "Crassula.colorata.or.exserta", "Daucus.glochidiatus", "Gilberta.tenuifolia",
+                                   "Gonocarpus.nodulosus", "Goodenia.berardiana", "Haloragis.odontocarpa", "Hyalosperma.glutinosum.subsp.glutinosum", "Hydrocotyle.pilifera", 
+                                   "Lawrencella.rosea", "Nicotiana.rotundifolia", "Plantago.debilis", "Podolepis.canescens", "Podotheca.gnaphalioides", "Rhodanthe.laevis",
+                                   "Rhodanthe.manglesii", "Rhodanthe.polycephala", "Schoenia.cassiniana", "Schoenus.nanus", "Senecio.glossanthus", "Trachymene.cyanopetala",
+                                   "Velleia.cycnopotamica", "Velleia.rosea", "Waitzia.acuminata"))
+mean(colSums(nat.stems))
 # or the exotics 
-# subset(SpMatrix, select=c("Arctotheca.calendula", "Calotis.hispidula", "Ehrharta.longiflora", "Hypochaeris.glabra", "Lysimachia.arvensis", "Monoculus.monstrosus",
-#                                   "Oxalis.sp", "Parentucellia.latifolia", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus", "Urospermum.picroides",
-#                                   "Ursinia.anthemoides", "Vulpia.bromoides"))
+ex.stems <-  subset(SpMatrix, select=c("Arctotheca.calendula", "Calotis.hispidula", "Ehrharta.longiflora", "Hypochaeris.glabra", "Lysimachia.arvensis", "Monoculus.monstrosus",
+                                   "Oxalis.sp", "Parentucellia.latifolia", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus", "Urospermum.picroides",
+                                   "Ursinia.anthemoides", "Vulpia.bromoides"))
+mean(colSums(ex.stems))
 
 # competitor gradient
 #sort(colSums(SpMatrix))
@@ -79,7 +81,7 @@ Nj2[,c("Angianthus.tomentosus", "Brachyscome.iberidifolia", "Crassula.colorata.o
                                                                                  "Gonocarpus.nodulosus", "Goodenia.berardiana", "Haloragis.odontocarpa", "Hyalosperma.glutinosum.subsp.glutinosum", "Hydrocotyle.pilifera", 
                                                                                  "Lawrencella.rosea", "Nicotiana.rotundifolia", "Plantago.debilis", "Podolepis.canescens", "Podotheca.gnaphalioides", "Rhodanthe.laevis",
                                                                                  "Rhodanthe.manglesii", "Rhodanthe.polycephala", "Schoenia.cassiniana", "Schoenus.nanus", "Senecio.glossanthus", "Trachymene.cyanopetala",
-                                                                                 "Velleia.cycnopotamica", "Velleia.rosea", "Waitzia.acuminata")]+80 # tripling native stem density
+                                                                                 "Velleia.cycnopotamica", "Velleia.rosea", "Waitzia.acuminata")]+80 # double native stem density
 Nj3[,c("Arctotheca.calendula", "Calotis.hispidula", "Ehrharta.longiflora", "Hypochaeris.glabra", "Lysimachia.arvensis", "Monoculus.monstrosus",
        "Oxalis.sp", "Parentucellia.latifolia", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus", "Urospermum.picroides",
        "Ursinia.anthemoides", "Vulpia.bromoides")] <- Nj3[,c("Arctotheca.calendula", "Calotis.hispidula", "Ehrharta.longiflora", "Hypochaeris.glabra", "Lysimachia.arvensis", "Monoculus.monstrosus",
@@ -89,7 +91,7 @@ Nj4[,c("Arctotheca.calendula", "Calotis.hispidula", "Ehrharta.longiflora", "Hypo
        "Oxalis.sp", "Parentucellia.latifolia", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus", "Urospermum.picroides",
        "Ursinia.anthemoides", "Vulpia.bromoides")] <- Nj4[,c("Arctotheca.calendula", "Calotis.hispidula", "Ehrharta.longiflora", "Hypochaeris.glabra", "Lysimachia.arvensis", "Monoculus.monstrosus",
                                                              "Oxalis.sp", "Parentucellia.latifolia", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus", "Urospermum.picroides",
-                                                             "Ursinia.anthemoides", "Vulpia.bromoides")]*.5
+                                                             "Ursinia.anthemoides", "Vulpia.bromoides")]+95
 
 Nj[,2]<-0
 NjB <- Nj[1:28,]
@@ -100,7 +102,7 @@ Nj3B <- Nj3[1:28,]
 Nj4[,2]<-0
 Nj4B <- Nj4[1:28,]
 
-
+Neighhoods <- list(NjB, Nj2B, Nj3B, Nj4B)
 
 #environmental gradient
 bend.env <- env[1:28]
@@ -109,18 +111,20 @@ bend.env <- env[1:28]
 env_gradient <- cbind(rep(sort(bend.env)[1:14],2), rep(sort(bend.env)[15:28],2)) # add or subtract (or a subset of all low values) adding one is shifting by one standard deviation
 
 # set up coexistence simulation
-posteriors=9000 # we want to sample through all the posterior values  
+posteriors=4500 # we want to sample through all the posterior values  
 plots=28 # run through each option for resident community population size 
-arca.into.observedB <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient))) # make an empty matrix (array for env??)
+arca.into.observedB <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient), length(Neighhoods))) # make an empty matrix (array for env??)
+res=1
 
 # Nj ####
 for (r in 1:plots) {
   for (x in 1:posteriors) {
     for (e in 1:ncol(env_gradient)) {
-      log_a_eij <- alphas[x,1]+Inclusion_ij*arca.phos$alpha_hat_ij[x,,]+ (alphas[x,2]+Inclusion_eij*arca.phos$alpha_hat_eij[x,,])*env_gradient[r,e] 
-      #Gives a 2x45 matrix of log_alpha_e,i,j for speciesxlocation
-      a_eij <- exp(log_a_eij[1,]) #to get your alpha term for each environmental condition and each competitor [1,] for reserve 1
-      
+      for (n in 1:length(Neighhoods)) {
+        log_a_eij <- (1-Intra) * arca.phos$alpha_generic[x,1] + Intra * arca.phos$alpha_intra[x,1] + 
+          Inclusion_ij[res,] * arca.phos$alpha_hat_ij[x,res,] + ((1-Intra) * arca.phos$alpha_generic[x,2] + Inclusion_eij[res,] * arca.phos$alpha_hat_eij[x,res,] + Intra * arca.phos$alpha_intra[x,2])*env_gradient[r,e]
+        a_eij <- exp(log_a_eij) 
+        
       y <- sample(seq(1,4500),1)
       # calculate resident abundance
       #Nj <- SpMatrix[r,] # do this as a sample through values too? add y <- sample(seq(1,129),1) then should be able to change number of runs
@@ -132,137 +136,23 @@ for (r in 1:plots) {
       
       # invade WAAC
       arca_tp1 <- (1-germ[y])*surv[y]*1 + 
-        1*germ[y]*lambdas/(1+sum(a_eij*NjB[r,]))
+        1*germ[y]*lambdas/(1+sum(a_eij*Neighhoods[[n]][r,]))
       #Nj needs to be array of plots by reserve by species and then subscripted to match a_eij [plot r and reserve 1]
       # calculate LDGR of WAAC
-      arca.into.observedB[r,x,e] <- log(arca_tp1/1)
-      
+      arca.into.observedB[r,x,e,n] <- log(arca_tp1/1)
+      }
     }
   }
 }
 
-# Nj2 ####
-arca.into.observed1B <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient))) # make an empty matrix (array for env??)
-
-for (r in 1:plots) {
-  for (x in 1:posteriors) {
-    for (e in 1:ncol(env_gradient)) {
-      
-      log_a_eij <- alphas[x,1]+Inclusion_ij*arca.phos$alpha_hat_ij[x,,]+ (alphas[x,2]+Inclusion_eij*arca.phos$alpha_hat_eij[x,,])*env_gradient[r,e] 
-      
-      #Gives a 2x45 matrix of log_alpha_e,i,j for speciesxlocation
-      a_eij <- exp(log_a_eij[1,]) #to get your alpha term for each environmental condition and each competitor
-      y <- sample(seq(1,4500),1)
-      
-      # calculate lambda 
-      overall_lambda <- lambda[x,,1]+lambda[x,,2]*env_gradient[r,e] # which order is the 2 and 2 for lambda? intercept/slope, reserve?
-      lambdas <- exp(overall_lambda[1])
-      
-      # invade ARCA
-      arca_tp1 <- (1-germ[y])*surv[y]*1 + 
-        1*germ[y]*lambdas/(1+sum(a_eij*Nj2B[r,]))
-      
-      # calculate LDGR of WAAC
-      arca.into.observed1B[r,x,e] <- log(arca_tp1/1)
-      
-    }
-  }
-}
-
-# Nj3 ####
-arca.into.observed2B <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient))) # make an empty matrix (array for env??)
-
-for (r in 1:plots) {
-  for (x in 1:posteriors) {
-    for (e in 1:ncol(env_gradient)) {
-      
-      log_a_eij <- alphas[x,1]+Inclusion_ij*arca.phos$alpha_hat_ij[x,,]+ (alphas[x,2]+Inclusion_eij*arca.phos$alpha_hat_eij[x,,])*env_gradient[r,e] 
-      
-      #Gives a 2x45 matrix of log_alpha_e,i,j for speciesxlocation
-      a_eij <- exp(log_a_eij[1,]) #to get your alpha term for each environmental condition and each competitor
-      y <- sample(seq(1,4500),1)
-      
-      # calculate lambda 
-      overall_lambda <- lambda[x,,1]+lambda[x,,2]*env_gradient[r,e] # which order is the 2 and 2 for lambda? intercept/slope, reserve?
-      lambdas <- exp(overall_lambda[1])
-      
-      # invade ARCA
-      arca_tp1 <- (1-germ[y])*surv[y]*1 + 
-        1*germ[y]*lambdas/(1+sum(a_eij*Nj3B[r,]))
-      
-      # calculate LDGR of WAAC
-      arca.into.observed2B[r,x,e] <- log(arca_tp1/1)
-      
-    }
-  }
-}
-
-# Nj4 ####
-arca.into.observed3B <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient))) # make an empty matrix (array for env??)
-
-for (r in 1:plots) {
-  for (x in 1:posteriors) {
-    for (e in 1:ncol(env_gradient)) {
-      
-      log_a_eij <- alphas[x,1]+Inclusion_ij*arca.phos$alpha_hat_ij[x,,]+ (alphas[x,2]+Inclusion_eij*arca.phos$alpha_hat_eij[x,,])*env_gradient[r,e] 
-      
-      #Gives a 2x45 matrix of log_alpha_e,i,j for speciesxlocation
-      a_eij <- exp(log_a_eij[1,]) #to get your alpha term for each environmental condition and each competitor
-      y <- sample(seq(1,4500),1)
-      
-      # calculate lambda 
-      overall_lambda <- lambda[x,,1]+lambda[x,,2]*env_gradient[r,e] # which order is the 2 and 2 for lambda? intercept/slope, reserve?
-      lambdas <- exp(overall_lambda[1])
-      
-      # invade ARCA
-      arca_tp1 <- (1-germ[y])*surv[y]*1 + 
-        1*germ[y]*lambdas/(1+sum(a_eij*Nj4B[r,]))
-      
-      # calculate LDGR of WAAC
-      arca.into.observed3B[r,x,e] <- log(arca_tp1/1)
-      
-    }
-  }
-}
-
-
-#waac.into.observed[1,,]
-#plot(density(waac.into.observed[,,1]))
-#plot(density(waac.into.observed[,,2]))
-
-# plot ####
 library(reshape2)
-library(dplyr)
-library(ggplot2)
-library(ggridges)
+library(plyr)
 
-data.melt <- melt(arca.into.observedB, varnames = c("plot", "post", "e"), value.name = "ldgr")
-data.melt$e <- as.factor(data.melt$e)
-data.melt$plot <- as.factor(data.melt$plot)
-data.melt$comp <- "seednat*2"
-
-data.melt1 <- melt(arca.into.observed1B, varnames = c("plot", "post", "e"), value.name = "ldgr")
-data.melt1$e <- as.factor(data.melt1$e)
-data.melt1$plot <- as.factor(data.melt1$plot)
-data.melt1$comp <- "seednat*3"
-
-data.melt2 <- melt(arca.into.observed2B, varnames = c("plot", "post", "e"), value.name = "ldgr")
-data.melt2$e <- as.factor(data.melt2$e)
-data.melt2$plot <- as.factor(data.melt2$plot)
-data.melt2$comp <- "weedex.75"
-
-data.melt3 <- melt(arca.into.observed3B, varnames = c("plot", "post", "e"), value.name = "ldgr")
-data.melt3$e <- as.factor(data.melt3$e)
-data.melt3$plot <- as.factor(data.melt3$plot)
-data.melt3$comp <- "weedex.5"
-
-dataB <- full_join(data.melt, data.melt1)
-dataB <- full_join(dataB, data.melt2)
-dataB <- full_join(dataB, data.melt3)
-
-#plot(density(data.melt$ldgr))
-#plot(density(data.melt1$ldgr))
-#plot(density(data.melt2$ldgr))
+dataB <- melt(arca.into.observedB, varnames = c("plot", "post", "e", "comp"), value.name = "ldgr")
+dataB$e <- as.factor(dataB$e)
+dataB$plot <- as.factor(dataB$plot)
+dataB$comp <- as.factor(dataB$comp)
+dataB$comp <- revalue(dataB$comp, c("1"="observed", "2"="double.nat", "3"="remove.ex", "4"="halve.ex"))
 
 saveRDS(dataB, file = "Sim data/shade&comp_gradient_arca_bd.rds")
 
@@ -280,19 +170,23 @@ NjP <- Nj[29:95,]
 Nj2P <- Nj2[29:95,]
 Nj3P <- Nj3[29:95,]
 Nj4P <- Nj4[29:95,]
+
+Neighhoods <- list(NjP, Nj2P, Nj3P, Nj4P)
+
 # set up coexistence simulation
 posteriors=9000 # we want to sample through all the posterior values  
 plots=67 # run through each option for resident community population size 
-arca.into.observed <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient))) # make an empty matrix (array for env??)
-
+arca.into.observed <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient), length(Neighhoods))) # make an empty matrix (array for env??)
+res=2
 # Nj ####
 for (r in 1:plots) {
   for (x in 1:posteriors) {
     for (e in 1:ncol(env_gradient)) {
-      log_a_eij <- alphas[x,1]+Inclusion_ij*arca.phos$alpha_hat_ij[x,,]+ (alphas[x,2]+Inclusion_eij*arca.phos$alpha_hat_eij[x,,])*env_gradient[r,e] 
-      #Gives a 2x45 matrix of log_alpha_e,i,j for speciesxlocation
-      a_eij <- exp(log_a_eij[2,]) #to get your alpha term for each environmental condition and each competitor
-      
+      for (n in 1:length(Neighhoods)) {
+        log_a_eij <- (1-Intra) * arca.phos$alpha_generic[x,1] + Intra * arca.phos$alpha_intra[x,1] + 
+          Inclusion_ij[res,] * arca.phos$alpha_hat_ij[x,res,] + ((1-Intra) * arca.phos$alpha_generic[x,2] + Inclusion_eij[res,] * arca.phos$alpha_hat_eij[x,res,] + Intra * arca.phos$alpha_intra[x,2])*env_gradient[r,e]
+        a_eij <- exp(log_a_eij) 
+        
       y <- sample(seq(1,4500),1)
       # calculate resident abundance
       #Nj <- SpMatrix[r,] # do this as a sample through values too? add y <- sample(seq(1,129),1) then should be able to change number of runs
@@ -304,128 +198,21 @@ for (r in 1:plots) {
       
       # invade WAAC
       arca_tp1 <- (1-germ[y])*surv[y]*1 + 
-        1*germ[y]*lambdas/(1+sum(a_eij*NjP[r,]))
+        1*germ[y]*lambdas/(1+sum(a_eij*Neighhoods[[n]][r,]))
       
       # calculate LDGR of WAAC
-      arca.into.observed[r,x,e] <- log(arca_tp1/1)
-      
+      arca.into.observed[r,x,e,n] <- log(arca_tp1/1)
+      }
     }
   }
 }
 
-# Nj2 ####
-arca.into.observed1 <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient))) # make an empty matrix (array for env??)
-
-for (r in 1:plots) {
-  for (x in 1:posteriors) {
-    for (e in 1:ncol(env_gradient)) {
-      
-      log_a_eij <- alphas[x,1]+Inclusion_ij*arca.phos$alpha_hat_ij[x,,]+ (alphas[x,2]+Inclusion_eij*arca.phos$alpha_hat_eij[x,,])*env_gradient[r,e] 
-      
-      #Gives a 2x45 matrix of log_alpha_e,i,j for speciesxlocation
-      a_eij <- exp(log_a_eij[2,]) #to get your alpha term for each environmental condition and each competitor
-      y <- sample(seq(1,4500),1)
-      
-      # calculate lambda 
-      overall_lambda <- lambda[x,,1]+lambda[x,,2]*env_gradient[r,e] # which order is the 2 and 2 for lambda? intercept/slope, reserve?
-      lambdas <- exp(overall_lambda[2])
-      
-      # invade ARCA
-      arca_tp1 <- (1-germ[y])*surv[y]*1 + 
-        1*germ[y]*lambdas/(1+sum(a_eij*Nj2P[r,]))
-      
-      # calculate LDGR of WAAC
-      arca.into.observed1[r,x,e] <- log(arca_tp1/1)
-      
-    }
-  }
-}
-
-# Nj3 ####
-arca.into.observed2 <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient))) # make an empty matrix (array for env??)
-
-for (r in 1:plots) {
-  for (x in 1:posteriors) {
-    for (e in 1:ncol(env_gradient)) {
-      
-      log_a_eij <- alphas[x,1]+Inclusion_ij*arca.phos$alpha_hat_ij[x,,]+ (alphas[x,2]+Inclusion_eij*arca.phos$alpha_hat_eij[x,,])*env_gradient[r,e] 
-      
-      #Gives a 2x45 matrix of log_alpha_e,i,j for speciesxlocation
-      a_eij <- exp(log_a_eij[2,]) #to get your alpha term for each environmental condition and each competitor
-      y <- sample(seq(1,4500),1)
-      
-      # calculate lambda 
-      overall_lambda <- lambda[x,,1]+lambda[x,,2]*env_gradient[r,e] # which order is the 2 and 2 for lambda? intercept/slope, reserve?
-      lambdas <- exp(overall_lambda[2])
-      
-      # invade ARCA
-      arca_tp1 <- (1-germ[y])*surv[y]*1 + 
-        1*germ[y]*lambdas/(1+sum(a_eij*Nj3P[r,]))
-      
-      # calculate LDGR of WAAC
-      arca.into.observed2[r,x,e] <- log(arca_tp1/1)
-      
-    }
-  }
-}
-
-# Nj4 ####
-arca.into.observed3 <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient))) # make an empty matrix (array for env??)
-
-for (r in 1:plots) {
-  for (x in 1:posteriors) {
-    for (e in 1:ncol(env_gradient)) {
-      
-      log_a_eij <- alphas[x,1]+Inclusion_ij*arca.phos$alpha_hat_ij[x,,]+ (alphas[x,2]+Inclusion_eij*arca.phos$alpha_hat_eij[x,,])*env_gradient[r,e] 
-      
-      #Gives a 2x45 matrix of log_alpha_e,i,j for speciesxlocation
-      a_eij <- exp(log_a_eij[2,]) #to get your alpha term for each environmental condition and each competitor
-      y <- sample(seq(1,4500),1)
-      
-      # calculate lambda 
-      overall_lambda <- lambda[x,,1]+lambda[x,,2]*env_gradient[r,e] # which order is the 2 and 2 for lambda? intercept/slope, reserve?
-      lambdas <- exp(overall_lambda[2])
-      
-      # invade ARCA
-      arca_tp1 <- (1-germ[y])*surv[y]*1 + 
-        1*germ[y]*lambdas/(1+sum(a_eij*Nj4P[r,]))
-      
-      # calculate LDGR of WAAC
-      arca.into.observed3[r,x,e] <- log(arca_tp1/1)
-      
-    }
-  }
-}
 # plot ####
-library(reshape2)
-library(ggplot2)
-library(ggridges)
-library(dplyr)
-
-data.melt <- melt(arca.into.observed, varnames = c("plot", "post", "e"), value.name = "ldgr")
-data.melt$e <- as.factor(data.melt$e)
-data.melt$plot <- as.factor(data.melt$plot)
-data.melt$comp <- "seednat*2"
-
-data.melt1 <- melt(arca.into.observed1, varnames = c("plot", "post", "e"), value.name = "ldgr")
-data.melt1$e <- as.factor(data.melt1$e)
-data.melt1$plot <- as.factor(data.melt1$plot)
-data.melt1$comp <- "seednat*3"
-
-data.melt2 <- melt(arca.into.observed2, varnames = c("plot", "post", "e"), value.name = "ldgr")
-data.melt2$e <- as.factor(data.melt2$e)
-data.melt2$plot <- as.factor(data.melt2$plot)
-data.melt2$comp <- "weedex.75"
-
-data.melt3 <- melt(arca.into.observed3, varnames = c("plot", "post", "e"), value.name = "ldgr")
-data.melt3$e <- as.factor(data.melt3$e)
-data.melt3$plot <- as.factor(data.melt3$plot)
-data.melt3$comp <- "weedex.5"
-
-data <- full_join(data.melt, data.melt1)
-data <- full_join(data, data.melt2)
-data <- full_join(data, data.melt3)
-
+data<- melt(arca.into.observed, varnames = c("plot", "post", "e", "comp"), value.name = "ldgr")
+data$e <- as.factor(data$e)
+data$plot <- as.factor(data$plot)
+data$comp <- as.factor(data$comp)
+data$comp <- revalue(data$comp, c("1"="observed", "2"="double.nat", "3"="remove.ex", "4"="halve.ex"))
 
 saveRDS(data, file = "Sim data/shade&comp_gradient_arca_pj.rds")
 
