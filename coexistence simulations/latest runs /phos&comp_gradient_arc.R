@@ -57,6 +57,7 @@ Nj <- SpMatrix # needs to be Bendering specific (needs to match a_eij) so Nj nee
 Nj2 <- SpMatrix
 Nj3 <- SpMatrix
 Nj4 <- SpMatrix
+Nj5 <- SpMatrix
 
 # calculating average stem abundances or natives and exotics 
 nat.stems <- Nj[,c("Angianthus.tomentosus", "Brachyscome.iberidifolia", "Crassula.colorata.or.exserta", "Daucus.glochidiatus", "Gilberta.tenuifolia",
@@ -100,14 +101,14 @@ Nj3[,2]<-0
 Nj3B <- Nj3[1:28,]
 Nj4[,2]<-0
 Nj4B <- Nj4[1:28,]
+Nj5<-Nj5*0
+Nj5B <- Nj5[1:28,]
 
-Neighhoods <- list(NjB, Nj2B, Nj3B, Nj4B)
+Neighhoods <- list(NjB, Nj2B, Nj3B, Nj4B, Nj5B)
 
 #environmental gradient
 bend.env <- env[1:28]
-#env_gradient <- cbind(env[1:28]-2, env[1:28]-1, env[1:28], 1+env[1:28], 2+env[1:28]) # add or subtract (or a subset of all low values) adding one is shifting by one standard deviation
-#env_gradient <- cbind(rep(mean(env[1:51]-2),51), rep(mean(env[1:51]-1),51), rep(mean(env[1:51]),51), rep(mean(1+env[1:51]),51), rep(mean(2+env[1:51]),51))
-env_gradient <- cbind(rep(sort(bend.env)[1:14],2), rep(sort(bend.env)[15:28],2)) # add or subtract (or a subset of all low values) adding one is shifting by one standard deviation
+env_gradient <- cbind(sample(bend.env[1:14], 28, replace=T), sample(bend.env[15:28], 28, replace=T), bend.env-2, bend.env-1, bend.env, bend.env+1, bend.env+2) # add or subtract (or a subset of all low values) adding one is shifting by one standard deviation
 
 # set up coexistence simulation
 posteriors=4500 # we want to sample through all the posterior values  
@@ -159,7 +160,7 @@ dataB <- melt(arca.into.observedB, varnames = c("plot", "post", "e", "comp"), va
 dataB$e <- as.factor(dataB$e)
 dataB$plot <- as.factor(dataB$plot)
 dataB$comp <- as.factor(dataB$comp)
-dataB$comp <- revalue(dataB$comp, c("1"="observed", "2"="double.nat", "3"="remove.ex", "4"="double.ex"))
+dataB$comp <- revalue(dataB$comp, c("1"="observed", "2"="double.nat", "3"="remove.ex", "4"="double.ex", "5"="no.comp"))
 
 saveRDS(dataB, file = "Sim data/phos&comp_gradient_arca_bd.rds")
 
@@ -167,9 +168,7 @@ saveRDS(dataB, file = "Sim data/phos&comp_gradient_arca_bd.rds")
 # PJ --------------------------------------------------------------
 #environmental gradient
 pj.env <- env[29:95]
-#env_gradient <- cbind(env[1:28]-2, env[1:28]-1, env[1:28], 1+env[1:28], 2+env[1:28]) # add or subtract (or a subset of all low values) adding one is shifting by one standard deviation
-#env_gradient <- cbind(rep(mean(env[1:51]-2),51), rep(mean(env[1:51]-1),51), rep(mean(env[1:51]),51), rep(mean(1+env[1:51]),51), rep(mean(2+env[1:51]),51))
-env_gradient <- cbind(rep(sort(pj.env)[1:34],2), rep(sort(pj.env)[34:67],2)) # add or subtract (or a subset of all low values) adding one is shifting by one standard deviation
+env_gradient <- cbind(sample(pj.env[1:33], 67, replace=T), sample(pj.env[33:67], 67, replace=T), pj.env-2, pj.env-1, pj.env, pj.env+1, pj.env+2) # add or subtract (or a subset of all low values) adding one is shifting by one standard deviation
 
 # need to change from above to be perenjori specific 
 
@@ -177,8 +176,9 @@ NjP <- Nj[29:95,]
 Nj2P <- Nj2[29:95,]
 Nj3P <- Nj3[29:95,]
 Nj4P <- Nj4[29:95,]
+Nj5P <- Nj5[29:95,]
 
-Neighhoods <- list(NjP, Nj2P, Nj3P, Nj4P)
+Neighhoods <- list(NjP, Nj2P, Nj3P, Nj4P, Nj5P)
 # set up coexistence simulation
 posteriors=4500 # we want to sample through all the posterior values  
 plots=67 # run through each option for resident community population size 
@@ -219,7 +219,7 @@ data<- melt(arca.into.observed, varnames = c("plot", "post", "e", "comp"), value
 data$e <- as.factor(data$e)
 data$plot <- as.factor(data$plot)
 data$comp <- as.factor(data$comp)
-data$comp <- revalue(data$comp, c("1"="observed", "2"="triple.nat", "3"="remove.ex", "4"="double.ex"))
+data$comp <- revalue(data$comp, c("1"="observed", "2"="triple.nat", "3"="remove.ex", "4"="double.ex", "5"="no.comp"))
 
 saveRDS(data, file = "Sim data/phos&comp_gradient_arca_pj.rds")
 

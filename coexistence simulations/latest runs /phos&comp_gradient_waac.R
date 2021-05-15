@@ -2,13 +2,11 @@ library(rstan)
 library(coda)
 rm(list=ls())
 
-# load in the rdata posteriors - just do one focal species in one script 
-
+# load in the rdata posteriors 
 load("Topher model fits/WAAC_Phos_Finalfit.rdata")
-arca.phos <- rstan::extract(FinalFit)
-dim(arca.phos$alphas)
+waac.phos <- rstan::extract(FinalFit) 
+dim(waac.phos$alphas)
 remove(FinalFit)
-
 
 # load in s and g data 
 load("SurvivalAndGermination/Germination.rdata")
@@ -21,7 +19,7 @@ surv <- rstan::extract(PrelimFit)
 surv<-as.data.frame(surv)
 remove(PrelimFit)
 
-germination <- data.frame(arca=germ$p.1, waac=germ$p.2)
+germination <- data.frame(arca=germ$p.1, waac=germ$p.2) # in order p.1 = arca, p.2 = waac
 
 survival <- data.frame(arca=surv$p.1, waac=surv$p.2)
 
@@ -34,62 +32,39 @@ invader.abund <- 1
 
 germ=germination$waac
 surv=survival$waac
-lambda = arca.phos$lambdas
-alphas = arca.phos$alphas
+lambda = waac.phos$lambdas
+alphas = waac.phos$alphas
 
 # Bendering --------------------------------------------------------------------------------------------
 colnames(SpMatrix) <- SpNames
-# pick the natives
-# subset(SpMatrix, select=c("Angianthus.tomentosus", "Brachyscome.iberidifolia", "Crassula.colorata.or.exserta", "Daucus.glochidiatus", "Gilberta.tenuifolia",
-#                                   "Gonocarpus.nodulosus", "Goodenia.berardiana", "Haloragis.odontocarpa", "Hyalosperma.glutinosum.subsp.glutinosum", "Hydrocotyle.pilifera", 
-#                                   "Lawrencella.rosea", "Nicotiana.rotundifolia", "Plantago.debilis", "Podolepis.canescens", "Podotheca.gnaphalioides", "Rhodanthe.laevis",
-#                                   "Rhodanthe.manglesii", "Rhodanthe.polycephala", "Schoenia.cassiniana", "Schoenus.nanus", "Senecio.glossanthus", "Trachymene.cyanopetala",
-#                                   "Velleia.cycnopotamica", "Velleia.rosea", "Waitzia.acuminata"))
-# or the exotics 
-# subset(SpMatrix, select=c("Arctotheca.calendula", "Calotis.hispidula", "Ehrharta.longiflora", "Hypochaeris.glabra", "Lysimachia.arvensis", "Monoculus.monstrosus",
-#                                   "Oxalis.sp", "Parentucellia.latifolia", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus", "Urospermum.picroides",
-#                                   "Ursinia.anthemoides", "Vulpia.bromoides"))
 
 # competitor gradient
 #sort(colSums(SpMatrix))
-Nj <- SpMatrix # needs to be Bendering specific (needs to match a_eij) so Nj needs a subscript 
+Nj <- SpMatrix
 Nj2 <- SpMatrix
 Nj3 <- SpMatrix
 Nj4 <- SpMatrix
-Nj5 <- SpMatrix # needs to be Bendering specific (needs to match a_eij) so Nj needs a subscript 
-Nj6 <- SpMatrix
-Nj7 <- SpMatrix
-Nj8 <- SpMatrix
+Nj5 <- SpMatrix 
 Nj9 <- SpMatrix
-Nj10 <- SpMatrix
-#colnames(SpMatrix)
+Nj10 <- SpMatrix 
+Nj10 <- SpMatrix 
 
 # calculating average stem abundances or natives and exotics 
-# nat.stems <- Nj[,c("Brachyscome.sp" , "Brachyscome.iberidifolia", "Crassula.colorata.or.exserta","Calotis.multicaulis", "Calotis.hispidula", 
-#                    "Calandrinia.eremaea","Daucus.glochidiatus", "Gilberta.tenuifolia", "Phyllangium.sulcatum",
-#                    "Gonocarpus.nodulosus", "Gilberta.tenuifolia", "Goodenia.berardiana", "Haloragis.odontocarpa", "Hyalosperma.glutinosum.subsp.glutinosum", "Hydrocotyle.pilifera", 
-#                    "Lawrencella.rosea", "Nicotiana.rotundifolia", "Plantago.debilis", "Podolepis.canescens", "Podotheca.gnaphalioides", "Rhodanthe.laevis", "Rhodanthe.citrina",
-#                    "Rhodanthe.manglesii", "Rhodanthe.polycephala", "Schoenia.cassiniana", "Schoenus.nanus", "Senecio.glossanthus", "Trachymene.cyanopetala",
-#                    "Velleia.cycnopotamica", "Velleia.rosea", "Waitzia.acuminata")]
-# mean(colSums(nat.stems))
+ nat.stems <- Nj[,c("Brachyscome.sp" , "Brachyscome.iberidifolia", "Crassula.colorata.or.exserta","Calotis.multicaulis", "Calotis.hispidula", 
+                    "Calandrinia.eremaea","Daucus.glochidiatus", "Gilberta.tenuifolia", "Phyllangium.sulcatum",
+                    "Gonocarpus.nodulosus", "Gilberta.tenuifolia", "Goodenia.berardiana", "Haloragis.odontocarpa", "Hyalosperma.glutinosum.subsp.glutinosum", "Hydrocotyle.pilifera", 
+                    "Lawrencella.rosea", "Nicotiana.rotundifolia", "Plantago.debilis", "Podolepis.canescens", "Podotheca.gnaphalioides", "Rhodanthe.laevis", "Rhodanthe.citrina",
+                    "Rhodanthe.manglesii", "Rhodanthe.polycephala", "Schoenia.cassiniana", "Schoenus.nanus", "Senecio.glossanthus", "Trachymene.cyanopetala",
+                    "Velleia.cycnopotamica", "Velleia.rosea", "Waitzia.acuminata")]
+ sort(colSums(nat.stems))
+ mean(colSums(nat.stems))
 # 
  ex.stems <- Nj3[,c("Arctotheca.calendula", "Brassica.tournefortii", "Ehrharta.longiflora", "Hypochaeris.glabra", "Lysimachia.arvensis", "Monoculus.monstrosus",
                     "Oxalis.sp", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus",
                     "Vulpia.bromoides")]
  mean(colSums(ex.stems))
 
-# seeding natives (add any number) (all natives or can pick specific ones - eg deviation species from stan model)
-Nj[,c("Brachyscome.sp" , "Brachyscome.iberidifolia", "Crassula.colorata.or.exserta","Calotis.multicaulis", "Calotis.hispidula", 
-      "Calandrinia.eremaea","Daucus.glochidiatus", "Gilberta.tenuifolia", "Phyllangium.sulcatum",
-      "Gonocarpus.nodulosus", "Gilberta.tenuifolia", "Goodenia.berardiana", "Haloragis.odontocarpa", "Hyalosperma.glutinosum.subsp.glutinosum", "Hydrocotyle.pilifera", 
-      "Lawrencella.rosea", "Nicotiana.rotundifolia", "Plantago.debilis", "Podolepis.canescens", "Podotheca.gnaphalioides", "Rhodanthe.laevis", "Rhodanthe.citrina",
-      "Rhodanthe.manglesii", "Rhodanthe.polycephala", "Schoenia.cassiniana", "Schoenus.nanus", "Senecio.glossanthus", "Trachymene.cyanopetala",
-      "Velleia.cycnopotamica", "Velleia.rosea", "Waitzia.acuminata")] <- Nj[,c("Brachyscome.sp" , "Brachyscome.iberidifolia", "Crassula.colorata.or.exserta","Calotis.multicaulis", "Calotis.hispidula", 
-                                                                               "Calandrinia.eremaea","Daucus.glochidiatus", "Gilberta.tenuifolia", "Phyllangium.sulcatum",
-                                                                               "Gonocarpus.nodulosus", "Gilberta.tenuifolia", "Goodenia.berardiana", "Haloragis.odontocarpa", "Hyalosperma.glutinosum.subsp.glutinosum", "Hydrocotyle.pilifera", 
-                                                                               "Lawrencella.rosea", "Nicotiana.rotundifolia", "Plantago.debilis", "Podolepis.canescens", "Podotheca.gnaphalioides", "Rhodanthe.laevis", "Rhodanthe.citrina",
-                                                                               "Rhodanthe.manglesii", "Rhodanthe.polycephala", "Schoenia.cassiniana", "Schoenus.nanus", "Senecio.glossanthus", "Trachymene.cyanopetala",
-                                                                               "Velleia.cycnopotamica", "Velleia.rosea", "Waitzia.acuminata")]
+# double natives and remove exotics
 Nj2[,c("Brachyscome.sp" , "Brachyscome.iberidifolia", "Crassula.colorata.or.exserta","Calotis.multicaulis", "Calotis.hispidula", 
        "Calandrinia.eremaea","Daucus.glochidiatus", "Gilberta.tenuifolia", "Phyllangium.sulcatum",
        "Gonocarpus.nodulosus", "Gilberta.tenuifolia", "Goodenia.berardiana", "Haloragis.odontocarpa", "Hyalosperma.glutinosum.subsp.glutinosum", "Hydrocotyle.pilifera", 
@@ -101,18 +76,24 @@ Nj2[,c("Brachyscome.sp" , "Brachyscome.iberidifolia", "Crassula.colorata.or.exse
                                                                                  "Lawrencella.rosea", "Nicotiana.rotundifolia", "Plantago.debilis", "Podolepis.canescens", "Podotheca.gnaphalioides", "Rhodanthe.laevis", "Rhodanthe.citrina",
                                                                                  "Rhodanthe.manglesii", "Rhodanthe.polycephala", "Schoenia.cassiniana", "Schoenus.nanus", "Senecio.glossanthus", "Trachymene.cyanopetala",
                                                                                  "Velleia.cycnopotamica", "Velleia.rosea", "Waitzia.acuminata")]+80 # double native stem density
+Nj2[,c("Arctotheca.calendula", "Brassica.tournefortii", "Ehrharta.longiflora", "Hypochaeris.glabra", "Lysimachia.arvensis", "Monoculus.monstrosus",
+       "Oxalis.sp", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus",
+       "Vulpia.bromoides")] <- Nj2[,c("Arctotheca.calendula", "Brassica.tournefortii", "Ehrharta.longiflora", "Hypochaeris.glabra", "Lysimachia.arvensis", "Monoculus.monstrosus",
+                                      "Oxalis.sp", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus",
+                                      "Vulpia.bromoides")]*0 #remove exotics
+
+# remove exotics
 Nj3[,c("Arctotheca.calendula", "Brassica.tournefortii", "Ehrharta.longiflora", "Hypochaeris.glabra", "Lysimachia.arvensis", "Monoculus.monstrosus",
          "Oxalis.sp", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus",
          "Vulpia.bromoides")] <- Nj3[,c("Arctotheca.calendula", "Brassica.tournefortii", "Ehrharta.longiflora", "Hypochaeris.glabra", "Lysimachia.arvensis", "Monoculus.monstrosus",
                                         "Oxalis.sp", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus",
-                                        "Vulpia.bromoides")]*0
-Nj4[,c("Arctotheca.calendula", "Brassica.tournefortii", "Ehrharta.longiflora", "Hypochaeris.glabra", "Lysimachia.arvensis", "Monoculus.monstrosus",
-       "Oxalis.sp", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus",
-       "Vulpia.bromoides")] <- Nj4[,c("Arctotheca.calendula", "Brassica.tournefortii", "Ehrharta.longiflora", "Hypochaeris.glabra", "Lysimachia.arvensis", "Monoculus.monstrosus",
-                                      "Oxalis.sp", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus",
-                                      "Vulpia.bromoides")]+75
+                                        "Vulpia.bromoides")]*0 
 
-Nj7[,c("Schoenus.nanus")] <- Nj7[,c("Schoenus.nanus")]+80
+# thin common natives
+Nj4[,c("Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea", "Rhodanthe.laevis", "Podolepis.canescens")] <- Nj4[,c("Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea", "Rhodanthe.laevis")]*0.5 
+
+# thin common natives and seed waitzia 
+Nj5[,c("Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea")] <- Nj5[,c("Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea")]*0.5 
 
 
 Nj[,45]<-0
@@ -123,28 +104,21 @@ Nj3[,45]<-0
 Nj3B <- Nj3[1:28,]
 Nj4[,45]<-0
 Nj4B <- Nj4[1:28,]
-# Nj5[,45]<-0
-# Nj5B <- Nj5[1:28,]
-# Nj6[,45]<-0
-# Nj6B <- Nj6[1:28,]
-Nj7[,45]<-0
-Nj7B <- Nj7[1:28,]
-Nj8[,45]<-0
-Nj8B <- Nj8[1:28,]
+# Nj5[,45]<-0 # leave in Waac
+Nj5B <- Nj5[1:28,]
 
-Neighhoods <- list(NjB, Nj2B, Nj3B, Nj4B, Nj7B, Nj8B)
+
+Neighhoods <- list(NjB, Nj2B, Nj3B, Nj4B, Nj5B)
 
 
 #environmental gradient
-bend.env <- env[1:28]
-#env_gradient <- cbind(env[1:28]-2, env[1:28]-1, env[1:28], 1+env[1:28], 2+env[1:28]) # add or subtract (or a subset of all low values) adding one is shifting by one standard deviation
-#env_gradient <- cbind(rep(mean(env[1:51]-2),51), rep(mean(env[1:51]-1),51), rep(mean(env[1:51]),51), rep(mean(1+env[1:51]),51), rep(mean(2+env[1:51]),51))
-env_gradient <- cbind(rep(sort(bend.env)[1:14],2), rep(sort(bend.env)[15:28],2)) # add or subtract (or a subset of all low values) adding one is shifting by one standard deviation
+bend.env <- env[1:51] 
+env_gradient <- cbind(bend.env-2, bend.env-1, bend.env, bend.env+1, bend.env+2) # add or subtract (or a subset of all low values) adding one is shifting by one standard deviation
 
 # set up coexistence simulation
 posteriors=4500 # we want to sample through all the posterior values  
 plots=28 # run through each option for resident community population size 
-arca.into.observedB <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient), length(Neighhoods))) # make an empty array
+waac.into.observedB <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient), length(Neighhoods))) # make an empty array
 res=1 # set first reserve ()
 
 # Nj ####
@@ -152,25 +126,22 @@ for (r in 1:plots) {
   for (x in 1:posteriors) {
     for (e in 1:ncol(env_gradient)) {
       for (n in 1:length(Neighhoods)) {
-        log_a_eij <- (1-Intra) * arca.phos$alpha_generic[x,1] + Intra * arca.phos$alpha_intra[x,1] + 
-          Inclusion_ij[res,] * arca.phos$alpha_hat_ij[x,res,] + ((1-Intra) * arca.phos$alpha_generic[x,2] + Inclusion_eij[res,] * arca.phos$alpha_hat_eij[x,res,] + Intra * arca.phos$alpha_intra[x,2])*env_gradient[r,e]
+        log_a_eij <- (1-Intra) * waac.phos$alpha_generic[x,1] + Intra * waac.phos$alpha_intra[x,1] + 
+          Inclusion_ij[res,] * waac.phos$alpha_hat_ij[x,res,] + ((1-Intra) * waac.phos$alpha_generic[x,2] + Inclusion_eij[res,] * waac.phos$alpha_hat_eij[x,res,] + Intra * waac.phos$alpha_intra[x,2])*env_gradient[r,e]
         a_eij <- exp(log_a_eij) 
         
       y <- sample(seq(1,4500),1)
-      # calculate resident abundance
-      #Nj <- SpMatrix[r,] # do this as a sample through values too? add y <- sample(seq(1,129),1) then should be able to change number of runs
-      #na.omit(Nj)
-      
+       
       # calculate lambda 
-      overall_lambda <- lambda[x,,1]+lambda[x,,2]*env_gradient[r,e] # which order is the 2 and 2 for lambda? intercept/slope, reserve?
+      overall_lambda <- lambda[x,,1]+lambda[x,,2]*env_gradient[r,e] 
       lambdas <- exp(overall_lambda[1])
       
       # invade WAAC
-      arca_tp1 <- (1-germ[y])*surv[y]*1 + 
+      waac_tp1 <- (1-germ[y])*surv[y]*1 + 
         1*germ[y]*lambdas/(1+sum(a_eij*Neighhoods[[n]][r,]))
-      #Nj needs to be array of plots by reserve by species and then subscripted to match a_eij [plot r and reserve 1]
+      
       # calculate LDGR of WAAC
-      arca.into.observedB[r,x,e,n] <- log(arca_tp1/1)
+      waac.into.observedB[r,x,e,n] <- log(waac_tp1/1)
       }
     }
   }
@@ -180,91 +151,75 @@ for (r in 1:plots) {
 library(reshape2)
 library(plyr)
 
-dataB <- melt(arca.into.observedB, varnames = c("plot", "post", "e", "comp"), value.name = "ldgr")
+dataB <- melt(waac.into.observedB, varnames = c("plot", "post", "e", "comp"), value.name = "ldgr")
 dataB$e <- as.factor(dataB$e)
 dataB$plot <- as.factor(dataB$plot)
 dataB$comp <- as.factor(dataB$comp)
-dataB$comp <- revalue(dataB$comp, c("1"="observed", "2"="double.nat", "3"="remove.ex", "4"="halve.ex", "5" = "double.dev.scna", "6"="triple.dev.scna"))
+#dataB$comp <- revalue(dataB$comp, c("1"="observed", "2"="double.nat", "3"="remove.ex", "4"="double.nat&remove.ex", "5" = "halve.common.natives", "6"="halve.common.natives&seed.waac"))
 
 saveRDS(dataB, file = "Sim data/phos&comp_gradient_waac_bd.rds")
 
 # PJ --------------------------------------------------------------
 #environmental gradient
-pj.env <- env[29:95]
-#env_gradient <- cbind(env[1:28]-2, env[1:28]-1, env[1:28], 1+env[1:28], 2+env[1:28]) # add or subtract (or a subset of all low values) adding one is shifting by one standard deviation
-#env_gradient <- cbind(rep(mean(env[1:51]-2),51), rep(mean(env[1:51]-1),51), rep(mean(env[1:51]),51), rep(mean(1+env[1:51]),51), rep(mean(2+env[1:51]),51))
-env_gradient <- cbind(rep(sort(pj.env)[1:34],2), rep(sort(pj.env)[34:67],2)) # add or subtract (or a subset of all low values) adding one is shifting by one standard deviation
-
+pj.env <- env[52:129]
+env_gradient <- cbind(pj.env-2, pj.env-1, pj.env, pj.env+1, pj.env+2) # add or subtract (or a subset of all low values) adding one is shifting by one standard deviation
 
 # need to change from above to be perenjori specific 
-Nj9[,c("Hyalosperma.glutinosum.subsp.glutinosum")] <- Nj9[,c("Hyalosperma.glutinosum.subsp.glutinosum")]*0
-Nj10[,c("Brachyscome.sp" , "Brachyscome.iberidifolia", "Crassula.colorata.or.exserta","Calotis.multicaulis", "Calotis.hispidula", 
-       "Calandrinia.eremaea","Daucus.glochidiatus", "Gilberta.tenuifolia", "Phyllangium.sulcatum",
-       "Gonocarpus.nodulosus", "Gilberta.tenuifolia", "Goodenia.berardiana", "Haloragis.odontocarpa", "Hyalosperma.glutinosum.subsp.glutinosum", "Hydrocotyle.pilifera", 
-       "Lawrencella.rosea", "Nicotiana.rotundifolia", "Plantago.debilis", "Podolepis.canescens", "Podotheca.gnaphalioides", "Rhodanthe.laevis", "Rhodanthe.citrina",
-       "Rhodanthe.manglesii", "Rhodanthe.polycephala", "Schoenia.cassiniana", "Schoenus.nanus", "Senecio.glossanthus", "Trachymene.cyanopetala",
-       "Velleia.cycnopotamica", "Velleia.rosea", "Waitzia.acuminata")] <- Nj10[,c("Brachyscome.sp" , "Brachyscome.iberidifolia", "Crassula.colorata.or.exserta","Calotis.multicaulis", "Calotis.hispidula", 
-                                                                                 "Calandrinia.eremaea","Daucus.glochidiatus", "Gilberta.tenuifolia", "Phyllangium.sulcatum",
-                                                                                 "Gonocarpus.nodulosus", "Gilberta.tenuifolia", "Goodenia.berardiana", "Haloragis.odontocarpa", "Hyalosperma.glutinosum.subsp.glutinosum", "Hydrocotyle.pilifera", 
-                                                                                 "Lawrencella.rosea", "Nicotiana.rotundifolia", "Plantago.debilis", "Podolepis.canescens", "Podotheca.gnaphalioides", "Rhodanthe.laevis", "Rhodanthe.citrina",
-                                                                                 "Rhodanthe.manglesii", "Rhodanthe.polycephala", "Schoenia.cassiniana", "Schoenus.nanus", "Senecio.glossanthus", "Trachymene.cyanopetala",
-                                                                                 "Velleia.cycnopotamica", "Velleia.rosea", "Waitzia.acuminata")]+80 # double native stem density
-Nj10[,c("Hyalosperma.glutinosum.subsp.glutinosum")] <- Nj10[,c("Hyalosperma.glutinosum.subsp.glutinosum")]*0
+# thin common natives and HYp0
+Nj9[,c("Hyalosperma.glutinosum.subsp.glutinosum", "Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea")] <- Nj9[,c("Hyalosperma.glutinosum.subsp.glutinosum", "Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea")]*0.5 
+# thin common natives and HYp0, leave waac
+Nj10[,c("Hyalosperma.glutinosum.subsp.glutinosum", "Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea")] <- Nj10[,c("Hyalosperma.glutinosum.subsp.glutinosum", "Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea")]*0.5 
 
 
 NjP <- Nj[29:95,]
 Nj2P <- Nj2[29:95,]
 Nj3P <- Nj3[29:95,]
 Nj4P <- Nj4[29:95,]
+Nj5P <- Nj5[29:95,]
 Nj9P <- Nj9[,45] <- 0
 Nj9P <- Nj9[29:95,]
-Nj10P <- Nj10[,45] <- 0
+#Nj10P <- Nj10[,45] <- 0 # leave in arca
 Nj10P <- Nj10[29:95,]
-#Nj9P[,c("Pentaschistis.airoides")]
-#Nj10P[,c("Pentaschistis.airoides")]
 
-Neighhoods <- list(NjP, Nj2P, Nj3P, Nj4P, Nj9P, Nj10P)
+Neighhoods <- list(NjP, Nj2P, Nj3P, Nj4P, Nj4P, Nj9P, Nj10P)
 
 # set up coexistence simulation
 posteriors=4500 # we want to sample through all the posterior values  
 plots=67 # run through each option for resident community population size 
-arca.into.observed <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient), length(Neighhoods))) # make an empty matrix (array for env??)
+waac.into.observed <- array(data=NA, dim =c(plots, posteriors, ncol(env_gradient), length(Neighhoods))) # make an empty matrix (array for env??)
 res=2
 # Nj ####
 for (r in 1:plots) {
   for (x in 1:posteriors) {
     for (e in 1:ncol(env_gradient)) {
       for (n in 1:length(Neighhoods)) {
-        log_a_eij <- (1-Intra) * arca.phos$alpha_generic[x,1] + Intra * arca.phos$alpha_intra[x,1] + 
-          Inclusion_ij[res,] * arca.phos$alpha_hat_ij[x,res,] + ((1-Intra) * arca.phos$alpha_generic[x,2] + Inclusion_eij[res,] * arca.phos$alpha_hat_eij[x,res,] + Intra * arca.phos$alpha_intra[x,2])*env_gradient[r,e]
+        log_a_eij <- (1-Intra) * waac.phos$alpha_generic[x,1] + Intra * waac.phos$alpha_intra[x,1] + 
+          Inclusion_ij[res,] * waac.phos$alpha_hat_ij[x,res,] + ((1-Intra) * waac.phos$alpha_generic[x,2] + Inclusion_eij[res,] * waac.phos$alpha_hat_eij[x,res,] + Intra * waac.phos$alpha_intra[x,2])*env_gradient[r,e]
         a_eij <- exp(log_a_eij) 
         
       y <- sample(seq(1,4500),1)
-      # calculate resident abundance
-      #Nj <- SpMatrix[r,] # do this as a sample through values too? add y <- sample(seq(1,129),1) then should be able to change number of runs
-      #na.omit(Nj)
-      
+
       # calculate lambda 
       overall_lambda <- lambda[x,,1]+lambda[x,,2]*env_gradient[r,e] # which order is the 2 and 2 for lambda? intercept/slope, reserve?
       lambdas <- exp(overall_lambda[2])
       
       # invade WAAC
-      arca_tp1 <- (1-germ[y])*surv[y]*1 + 
+      waac_tp1 <- (1-germ[y])*surv[y]*1 + 
         1*germ[y]*lambdas/(1+sum(a_eij*Neighhoods[[n]][r,]))
       
       # calculate LDGR of WAAC
-      arca.into.observed[r,x,e,n] <- log(arca_tp1/1)
+      waac.into.observed[r,x,e,n] <- log(waac_tp1/1)
       } 
     }
   }
 }
 
 # plot ####
-data<- melt(arca.into.observed, varnames = c("plot", "post", "e", "comp"), value.name = "ldgr")
+data<- melt(waac.into.observed, varnames = c("plot", "post", "e", "comp"), value.name = "ldgr")
 data$e <- as.factor(data$e)
 data$plot <- as.factor(data$plot)
 data$comp <- as.factor(data$comp)
-data$comp <- revalue(data$comp, c("1"="observed", "2"="double.nat", "3"="remove.ex", "4"="halve.ex", "5"="remove.dev.hygl", "6"="double.nat.remove.hygl"))
+#data$comp <- revalue(data$comp, c("1"="observed", "2"="double.nat", "3"="remove.ex", "4"="halve.ex", "5"="remove.dev.hygl", "6"="double.nat.remove.hygl", "7"="no.comp"))
 
 saveRDS(data, file = "Sim data/phos&comp_gradient_waac_pj.rds")
 
