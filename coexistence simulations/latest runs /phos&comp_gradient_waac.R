@@ -5,7 +5,6 @@ rm(list=ls())
 # load in the rdata posteriors 
 load("Topher model fits/WAAC_Phos_Finalfit.rdata")
 waac.phos <- rstan::extract(FinalFit) 
-dim(waac.phos$alphas)
 remove(FinalFit)
 
 # load in s and g data 
@@ -46,7 +45,6 @@ Nj3 <- SpMatrix
 Nj4 <- SpMatrix
 Nj5 <- SpMatrix 
 Nj9 <- SpMatrix
-Nj10 <- SpMatrix 
 Nj10 <- SpMatrix 
 
 # calculating average stem abundances or natives and exotics 
@@ -90,10 +88,8 @@ Nj3[,c("Arctotheca.calendula", "Brassica.tournefortii", "Ehrharta.longiflora", "
                                         "Vulpia.bromoides")]*0 
 
 # thin common natives
-Nj4[,c("Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea", "Rhodanthe.laevis", "Podolepis.canescens")] <- Nj4[,c("Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea", "Rhodanthe.laevis")]*0.5 
+#Nj4[,c("Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea", "Rhodanthe.laevis", "Podolepis.canescens")] <- Nj4[,c("Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea", "Rhodanthe.laevis")]*0.5 
 
-# thin common natives and seed waitzia 
-Nj5[,c("Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea")] <- Nj5[,c("Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea")]*0.5 
 
 
 Nj[,45]<-0
@@ -108,7 +104,7 @@ Nj4B <- Nj4[1:28,]
 Nj5B <- Nj5[1:28,]
 
 
-Neighhoods <- list(NjB, Nj2B, Nj3B, Nj4B, Nj5B)
+Neighhoods <- list(NjB, Nj2B, Nj3B, Nj4B*0)
 
 
 #environmental gradient
@@ -181,7 +177,7 @@ Nj9P <- Nj9[29:95,]
 #Nj10P <- Nj10[,45] <- 0 # leave in arca
 Nj10P <- Nj10[29:95,]
 
-Neighhoods <- list(NjP, Nj2P, Nj3P, Nj4P, Nj4P, Nj9P, Nj10P)
+Neighhoods <- list(NjP, Nj2P, Nj3P, Nj4P, Nj4P*0, Nj9P, Nj10P)
 
 # set up coexistence simulation
 posteriors=4500 # we want to sample through all the posterior values  

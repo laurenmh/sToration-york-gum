@@ -105,7 +105,7 @@ Nj4B <- Nj4[1:28,]
 Nj5 <- Nj5*0
 Nj5B <- Nj5[1:28,]
 
-Neighhoods <- list(NjB, Nj2B, Nj3B, Nj4B, Nj5B)
+Neighhoods <- list(NjB, Nj2B, Nj3B, Nj4B, Nj5B*0)
 
 #environmental gradient
 bend.env <- env[1:28]
@@ -153,7 +153,7 @@ dataB <- melt(arca.into.observedB, varnames = c("plot", "post", "e", "comp"), va
 dataB$e <- as.factor(dataB$e)
 dataB$plot <- as.factor(dataB$plot)
 dataB$comp <- as.factor(dataB$comp)
-dataB$comp <- revalue(dataB$comp, c("1"="observed", "2"="double.nat", "3"="remove.ex", "4"="double.ex", "5"="no.comp"))
+#dataB$comp <- revalue(dataB$comp, c("1"="observed", "2"="double.nat", "3"="remove.ex", "4"="double.ex", "5"="no.comp"))
 
 saveRDS(dataB, file = "Sim data/shade&comp_gradient_arca_bd.rds")
 
@@ -171,7 +171,7 @@ Nj3P <- Nj3[29:95,]
 Nj4P <- Nj4[29:95,]
 Nj5P <- Nj5[29:95,]
 
-Neighhoods <- list(NjP, Nj2P, Nj3P, Nj4P, Nj5P)
+Neighhoods <- list(NjP, Nj2P, Nj3P, Nj4P, Nj5P*0)
 
 # set up coexistence simulation
 posteriors=4500 # we want to sample through all the posterior values  
@@ -212,7 +212,7 @@ data<- melt(arca.into.observed, varnames = c("plot", "post", "e", "comp"), value
 data$e <- as.factor(data$e)
 data$plot <- as.factor(data$plot)
 data$comp <- as.factor(data$comp)
-data$comp <- revalue(data$comp, c("1"="observed", "2"="double.nat", "3"="remove.ex", "4"="double.ex", "5"="no.comp"))
+#data$comp <- revalue(data$comp, c("1"="observed", "2"="double.nat", "3"="remove.ex", "4"="double.ex", "5"="no.comp"))
 
 saveRDS(data, file = "Sim data/shade&comp_gradient_arca_pj.rds")
 

@@ -90,7 +90,7 @@ Nj3[,c("Arctotheca.calendula", "Brassica.tournefortii", "Ehrharta.longiflora", "
                                       "Oxalis.sp", "Pentaschistis.airoides", "Petrorhagia.velutina", "Sonchus.oleraceus",
                                       "Vulpia.bromoides")]*0
 
-#remove HYPO and thin common natives, seed natives
+#remove HYPO and thin common natives
 Nj4[,c("Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea")] <- Nj4[,c("Gonocarpus.nodulosus", "Trachymene.cyanopetala","Lawrencella.rosea")]*0.5 
 Nj4[,c("Hypochaeris.glabra")] <- Nj4[,c("Hypochaeris.glabra")]*0
 
@@ -111,7 +111,7 @@ Nj4B <- Nj4[1:28,]
 Nj5B <- Nj5[1:28,]
 
 
-Neighhoods <- list(NjB, Nj2B, Nj3B, Nj4B, Nj5B)
+Neighhoods <- list(NjB, Nj2B, Nj3B, Nj4B*0)
 
 #environmental gradient
 bend.env <- env[1:51] 
@@ -146,7 +146,7 @@ for (r in 1:plots) {
         1*germ[y]*lambdas/(1+sum(a_eij*Neighhoods[[n]][r,]))
       #Nj needs to be array of plots by reserve by species and then subscripted to match a_eij [plot r and reserve 1]
       # calculate LDGR of WAAC
-      waac.into.observedB[r,x,e,n] <- log(arca_tp1/1)
+      waac.into.observedB[r,x,e,n] <- log(waac_tp1/1)
       }
     }
   }
@@ -177,7 +177,7 @@ Nj3P <- Nj3[29:95,]
 Nj4P <- Nj4[29:95,]
 Nj5P <- Nj5[29:95,]
 
-Neighhoods <- list(NjP, Nj2P, Nj3P, Nj4P, Nj5P)
+Neighhoods <- list(NjP, Nj2P, Nj3P, Nj4P*0, Nj5P)
 
 
 # set up coexistence simulation
@@ -205,7 +205,7 @@ for (r in 1:plots) {
         1*germ[y]*lambdas/(1+sum(a_eij*Neighhoods[[n]][r,]))
       
       # calculate LDGR of WAAC
-      waac.into.observed[r,x,e,n] <- log(arca_tp1/1)
+      waac.into.observed[r,x,e,n] <- log(waac_tp1/1)
       }
     }
   }
