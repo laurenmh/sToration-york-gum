@@ -1,3 +1,5 @@
+#update by Lauren Shoemaker Jan 16th
+
 library(rstan)
 library(coda)
 library(HDInterval)
