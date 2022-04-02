@@ -5,7 +5,7 @@ library(coda)
 library(HDInterval)
 rm(list=ls())
 
-location <- 1 # set reserve to be Bendering 
+location <- 2 # set reserve to be Bendering 
              # a 2 will set this to be Perenjori
 
 load("Topher model fits/WAAC_Shade_FinalFit.rdata")
@@ -13,6 +13,7 @@ Post <- rstan::extract(FinalFit)
 Shade <- list(Post = Post, SpNames = SpNames, N = N, S = S, Fecundity = Fecundity,
              reserve = reserve, SpMatrix = SpMatrix, env = env, Inclusion_ij = Inclusion_ij,
              Inclusion_eij = Inclusion_eij, Intra = Intra)
+Shade_Params <- Shade$Post
 remove(FinalFit)
 
 load("Topher model fits/WAAC_Phos_FinalFit.rdata")
@@ -20,14 +21,16 @@ Post <- rstan::extract(FinalFit)
 Phos <- list(Post = Post, SpNames = SpNames, N = N, S = S, Fecundity = Fecundity,
               reserve = reserve, SpMatrix = SpMatrix, env = env, Inclusion_ij = Inclusion_ij,
               Inclusion_eij = Inclusion_eij, Intra = Intra)
+Phos_Params <- Phos$Post
 remove(FinalFit)
 
 env <- seq(-2, 2, by=0.1)
-lambdas_shade <- Shade$lambdas
+lambdas_shade <- Shade_Params$lambdas
 lambda_shade_gradient <- array(NA, c(3, length(env)))
 
-lambdas_phos <- Phos$lambdas
+lambdas_phos <- Phos_Params$lambdas
 lambda_phos_gradient <- array(NA, c(3, length(env)))
+alphas_phos_gradient <- array(NA, c(3, length(env), Phos$S))
 
 for (i in 1:length(env)) {
   lambda_shade_post <- exp(lambdas_shade[,location,1] + 
@@ -39,6 +42,22 @@ for (i in 1:length(env)) {
                              lambdas_phos[,location,2] * env[i])
   lambda_phos_gradient[1,i] <- mean(lambda_phos_post)
   lambda_phos_gradient[2:3,i] <- HDInterval::hdi(lambda_phos_post)
+  
+  alphas_phos_post <- matrix(NA, nrow=4500, ncol=Phos$S)
+  for (xx in 1:4500) {
+  alphas_phos_post[xx,] <- exp((1-Phos$Intra) * Phos_Params$alpha_generic[xx,1] + # generic, no env grad
+                  Phos$Intra * Phos_Params$alpha_intra[xx,1] +     # intras, no env grad
+                  Phos$Inclusion_ij[location,] * Phos_Params$alpha_hat_ij[xx,location,] + # non generic, no env grad
+                  ((1-Phos$Intra) * Phos_Params$alpha_generic[xx,2] + # env grad, generic
+                     Phos$Inclusion_eij[location,] * Phos_Params$alpha_hat_eij[xx,location,] + # slope, non generic 
+                     Phos$Intra * Phos_Params$alpha_intra[xx,2]) * env[i])
+  }
+  
+  for (s in 1:Phos$S) {
+    alphas_phos_gradient[1,i,s] <-  mean(alphas_phos_post[,s])
+    alphas_phos_gradient[2:3,i,s] <- HDInterval::hdi(alphas_phos_post[,s])
+  }
+  
 }
 
 env_polygon <- c(env, rev(env))
@@ -52,6 +71,12 @@ polygon(env_polygon, lambda_shade_polygon, col=rgb(0,0,1,.2), border=rgb(0,0,1,.
 lines(env, lambda_phos_gradient[1,], lty=1, lwd=2, col="darkgreen")
 polygon(env_polygon, lambda_phos_polygon, col=rgb(0,1,0,.2), border=rgb(0,1,0,.2))
 
+plot(env, alphas_phos_gradient[1,,1], type="l", lwd=2, col="darkblue",
+     xlim=c(-2,2), ylim=c(0,.1), xlab="Environmental Gradient", ylab="Alphas")
+for (s in 1:Phos$S) {
+  lines(env, alphas_phos_gradient[1,,s], lty=1, lwd=2, col="darkgreen")
+}
+
 
 # load in s and g data 
 load("SurvivalAndGermination/Germination.rdata")
@@ -64,9 +89,64 @@ surv <- rstan::extract(PrelimFit)
 surv<-as.data.frame(surv)
 remove(PrelimFit)
 
-germination <- data.frame(arca=germ$p.1, waac=germ$p.2)
+g_waac<- germ$p.2
+#germination <- data.frame(arca=germ$p.1, waac=germ$p.2)
+s_waac <-surv$p.2 
+#survival <- data.frame(arca=surv$p.1, waac=surv$p.2)
 
-survival <- data.frame(arca=surv$p.1, waac=surv$p.2)
+# coexistence simulations - invasion growth rates -----------------------------------------
+# simulation of baseline community
+plots <- which(Phos$reserve == location)
+obs_env <- Phos$env[plots]
+posteriors <- 4500
+obs_waac_ldgr <- matrix(NA, length(plots), posteriors)
+#neighbors <- Phos$SpMatrix[plots,]
+counter <- 1
+for (aa in plots) {
+  for (bb in 1:posteriors) {
+      lambdas <- exp(Phos_Params$lambdas[bb,location,1] + Phos_Params$lambdas[bb,location,2]*obs_env[aa])
+
+      #sp. specific inter
+      #intra
+      alphas <- exp((1-Phos$Intra) * Phos_Params$alpha_generic[bb,1] + # generic, no env grad
+                      Phos$Intra * Phos_Params$alpha_intra[bb,1] +     # intras, no env grad
+                      Phos$Inclusion_ij[location,] * Phos_Params$alpha_hat_ij[bb,location,] + # non generic, no env grad
+                      ((1-Phos$Intra) * Phos_Params$alpha_generic[bb,2] + # env grad, generic
+                         Phos$Inclusion_eij[location,] * Phos_Params$alpha_hat_eij[bb,location,] + # slope, non generic 
+                         Phos$Intra * Phos_Params$alpha_intra[bb,2]) * Phos$env[aa]) # slope intra
+      
+        
+        # invade WAAC
+        waac_growth <- (1-g_waac[bb])*s_waac[bb]*1 + 
+          1*g_waac[bb]*lambdas/(1+sum(alphas*Phos$SpMatrix[aa,]))
+        #Nj needs to be array of plots by reserve by species and then subscripted to match a_eij [plot r and reserve 1]
+        # calculate LDGR of WAAC
+        obs_waac_ldgr[counter,bb] <- log(waac_growth/1)
+  }
+  counter <- counter + 1
+}
+
+library(reshape2)
+data.melt <- melt(obs_waac_ldgr, varnames = c("plot", "index"), value.name = "ldgr")
+str(data.melt)
+data.melt$index <- as.factor(data.melt$index)
+data.melt$plot <- as.factor(data.melt$plot)
+str(data.melt)
+
+library(ggplot2)
+#install.packages("ggridges")
+library(ggridges)
+
+ggplot(data.melt, aes(x = ldgr, y = index, fill = 0.5 - abs(0.5 - stat(ecdf)))) +
+  stat_density_ridges(geom = "density_ridges_gradient", calc_ecdf = TRUE) +
+  #scale_fill_viridis_c(name = "Tail probability", direction = -1, option="plasma") +
+  geom_vline(xintercept = 0, linetype = "dashed")
+
+
+
+
+
+
 
 
 # coexistence simulations - invasion growth rates -----------------------------------------
