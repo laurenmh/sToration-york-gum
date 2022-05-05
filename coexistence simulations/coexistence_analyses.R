@@ -3,6 +3,11 @@
 library(rstan)
 library(coda)
 library(HDInterval)
+library(tidyverse)
+library(hrbrthemes)
+library(kableExtra)
+library(ggridges)
+
 rm(list=ls())
 
 location <- 2 # set reserve to be Bendering 
@@ -64,12 +69,15 @@ env_polygon <- c(env, rev(env))
 lambda_shade_polygon <- c(lambda_shade_gradient[2,], rev(lambda_shade_gradient[3,]))
 lambda_phos_polygon <- c(lambda_phos_gradient[2,], rev(lambda_phos_gradient[3,]))
 
-plot(env, lambda_shade_gradient[1,], type="l", lwd=2, col="darkblue",
-     xlim=c(-2,2), ylim=c(0,25), xlab="Environmental Gradient", ylab="Lambda")
+quartz()
+plot(env, lambda_shade_gradient[1,], type="l", lwd=3, col="darkblue",
+     xlim=c(-2,2), ylim=c(0,22), xlab="Environmental Gradient (Scaled)", ylab="Lambda (Density Independent Seed Production)")
 polygon(env_polygon, lambda_shade_polygon, col=rgb(0,0,1,.2), border=rgb(0,0,1,.2))
 
-lines(env, lambda_phos_gradient[1,], lty=1, lwd=2, col="darkgreen")
+lines(env, lambda_phos_gradient[1,], lty=1, lwd=3, col="darkgreen")
 polygon(env_polygon, lambda_phos_polygon, col=rgb(0,1,0,.2), border=rgb(0,1,0,.2))
+legend("topright", c("Shade", "Phosphorous"), col=c("darkblue", "darkgreen"), lwd=3)
+legend("topright", c("Shade", "Phosphorous"), col=c(rgb(0,0,1,.2), rgb(0,1,0,.2)), lwd=15)
 
 plot(env, alphas_phos_gradient[1,,1], type="l", lwd=2, col="darkblue",
      xlim=c(-2,2), ylim=c(0,.1), xlab="Environmental Gradient", ylab="Alphas")
@@ -97,15 +105,24 @@ s_waac <-surv$p.2
 # coexistence simulations - invasion growth rates -----------------------------------------
 # simulation of baseline community
 plots <- which(Phos$reserve == location)
-obs_env <- Phos$env[plots]
-posteriors <- 4500
-obs_waac_ldgr <- matrix(NA, length(plots), posteriors)
-#neighbors <- Phos$SpMatrix[plots,]
+posteriors <- sample(4500, 1000, replac=FALSE)
+obs_waac_ldgr <- data.frame(matrix(ncol=7, nrow=1000*length(plots)))
+names(obs_waac_ldgr) <- c("env", "replicate", "obs_ldgr", "nocomp_ldgr", "lowp_ldgr", "nocomp_lowp_ldgr", "lowshade_ldgr")
+lowp <- rep(-2, 129)
+lowshade <- rep(-2, 129)
+#obs_waac_ldgr <- matrix(NA, length(plots), length(posteriors))
+neighbors <- Phos$SpMatrix[,]
+neighbors[,45] <- 0
+no_neighbors <- matrix(0, 129, 45)
 counter <- 1
 for (aa in plots) {
-  for (bb in 1:posteriors) {
-      lambdas <- exp(Phos_Params$lambdas[bb,location,1] + Phos_Params$lambdas[bb,location,2]*obs_env[aa])
+  post_counter <- 1
+  for (bb in posteriors) {
+      lambdas <- exp(Phos_Params$lambdas[bb,location,1] + Phos_Params$lambdas[bb,location,2]*Phos$env[aa])
+      lowp_lambdas <- exp(Phos_Params$lambdas[bb,location,1] + Phos_Params$lambdas[bb,location,2]*lowp[aa])
 
+      lowshade_lambdas <- exp(Shade_Params$lambdas[bb,location,1] + Shade_Params$lambdas[bb,location,2]*lowshade[aa])
+      
       #sp. specific inter
       #intra
       alphas <- exp((1-Phos$Intra) * Phos_Params$alpha_generic[bb,1] + # generic, no env grad
@@ -115,16 +132,111 @@ for (aa in plots) {
                          Phos$Inclusion_eij[location,] * Phos_Params$alpha_hat_eij[bb,location,] + # slope, non generic 
                          Phos$Intra * Phos_Params$alpha_intra[bb,2]) * Phos$env[aa]) # slope intra
       
+      lowp_alphas <- exp((1-Phos$Intra) * Phos_Params$alpha_generic[bb,1] + # generic, no env grad
+                      Phos$Intra * Phos_Params$alpha_intra[bb,1] +     # intras, no env grad
+                      Phos$Inclusion_ij[location,] * Phos_Params$alpha_hat_ij[bb,location,] + # non generic, no env grad
+                      ((1-Phos$Intra) * Phos_Params$alpha_generic[bb,2] + # env grad, generic
+                         Phos$Inclusion_eij[location,] * Phos_Params$alpha_hat_eij[bb,location,] + # slope, non generic 
+                         Phos$Intra * Phos_Params$alpha_intra[bb,2]) * lowp[aa]) # slope intra
+      
+      lowshade_alphas <- exp((1-Shade$Intra) * Shade_Params$alpha_generic[bb,1] + # generic, no env grad
+                           Shade$Intra * Shade_Params$alpha_intra[bb,1] +     # intras, no env grad
+                           Shade$Inclusion_ij[location,] * Shade_Params$alpha_hat_ij[bb,location,] + # non generic, no env grad
+                           ((1-Shade$Intra) * Shade_Params$alpha_generic[bb,2] + # env grad, generic
+                              Shade$Inclusion_eij[location,] * Shade_Params$alpha_hat_eij[bb,location,] + # slope, non generic 
+                              Shade$Intra * Shade_Params$alpha_intra[bb,2]) * lowshade[aa]) # slope intra
+      
         
         # invade WAAC
         waac_growth <- (1-g_waac[bb])*s_waac[bb]*1 + 
-          1*g_waac[bb]*lambdas/(1+sum(alphas*Phos$SpMatrix[aa,]))
+          1*g_waac[bb]*lambdas/(1+sum(alphas*neighbors[aa,]))
+        
+        no_compwaac_growth <- (1-g_waac[bb])*s_waac[bb]*1 + 
+          1*g_waac[bb]*lambdas/(1+sum(alphas*no_neighbors[aa,]))
+        
+       lowp_waac_growth <- (1-g_waac[bb])*s_waac[bb]*1 + 
+          1*g_waac[bb]*lowp_lambdas/(1+sum(lowp_alphas*neighbors[aa,]))
+       
+       lowshade_waac_growth <- (1-g_waac[bb])*s_waac[bb]*1 + 
+         1*g_waac[bb]*lowshade_lambdas/(1+sum(lowshade_alphas*neighbors[aa,]))
+        
+        nocomp_lowp_waac_growth <- (1-g_waac[bb])*s_waac[bb]*1 + 
+          1*g_waac[bb]*lowp_lambdas/(1+sum(lowp_alphas*no_neighbors[aa,]))
         #Nj needs to be array of plots by reserve by species and then subscripted to match a_eij [plot r and reserve 1]
         # calculate LDGR of WAAC
-        obs_waac_ldgr[counter,bb] <- log(waac_growth/1)
+        obs_waac_ldgr[counter,1] <- Phos$env[aa]
+        obs_waac_ldgr[counter,2] <- post_counter
+        obs_waac_ldgr[counter,3] <- log(waac_growth/1)
+        obs_waac_ldgr[counter,4] <- log(no_compwaac_growth/1)
+        obs_waac_ldgr[counter,5] <- log(lowp_waac_growth/1)
+        obs_waac_ldgr[counter,6] <- log(nocomp_lowp_waac_growth/1)
+        obs_waac_ldgr[counter,7] <- log(lowshade_waac_growth/1)
+
+        post_counter <- post_counter + 1
+        counter <- counter + 1
   }
-  counter <- counter + 1
+  #counter <- counter + 1
 }
+
+
+
+quartz()
+ggplot(obs_waac_ldgr, aes(x=ldgr, y=as.factor(1)))+
+  geom_density_ridges(aes(x=obs_ldgr), alpha=0.5, fill="blue",scale=.5)+
+  geom_density_ridges(aes(x=nocomp_ldgr), alpha=0.5, fill="grey",scale=.5)+
+  geom_density_ridges(aes(x=lowp_ldgr), alpha=0.5, fill="green",scale=.5)+
+  geom_density_ridges(aes(x=nocomp_lowp_ldgr), alpha=0.5, fill="purple",scale=.5) +
+  theme_classic() +
+  scale_x_continuous(name="Waitzia Low Density Growth Rate", breaks=c(-0.5, 0, .5, 1, 1.5, 2)) +
+  geom_vline(xintercept = 0, color="black", size=2) +
+  scale_y_discrete(name="Probability Density") 
+
+cbp2 <- c("#999999", "#E69F00", "#56B4E9", "#009E73",
+          "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+quartz(width=6, height=6)
+ggplot(obs_waac_ldgr)+
+  geom_density(aes(x=obs_ldgr, fill="red"))+
+  geom_density(aes(x=nocomp_ldgr, fill="pink"))+
+  geom_density(aes(x=lowp_ldgr, fill="green"))+
+  geom_density(aes(x=lowshade_ldgr, fill="yellow"))+
+  geom_density(aes(x=nocomp_lowp_ldgr, fill="blue")) +
+  theme_classic() +
+  scale_x_continuous(name="Waitzia Low Density Growth Rate", breaks=c(-0.5, 0, .5, 1, 1.5, 2)) +
+  geom_vline(xintercept = 0, color="black", size=1.5) +
+  scale_y_discrete(name="Probability Density") +
+   scale_fill_manual(guide='legend', name = 'Scenario',
+                       values=alpha(c("red"=cbp2[2],"pink"=cbp2[8],
+                                "green"=cbp2[4], "yellow"=cbp2[1], "blue"=cbp2[6]),.5),
+                        labels=c("Observed", "No Comp", "Low P",
+                                 "Low Shade", "No Comp, Low P")) +
+  theme(text = element_text(size = 14), legend.position = c(.8,.8))  
+
+
+#theme(legend.position = c(1.0,.2))
+
+
+
+
+ggplot(obs_waac_ldgr, aes(x=ldgr, y=as.factor(env)))+
+  geom_density_ridges_gradient(aes(fill=..x..))+
+  scale_fill_gradient(low="orange", high="navy") +
+  scale_fill_viridis_c(name = "LDGR", direction = -1)
+
+
+ggplot(obs_waac_ldgr, aes(x=ldgr, color=env, fill=env)) +
+  geom_density_ridges_gradient(alpha=0.6) #+
+  scale_fill_viridis(discrete=TRUE) +
+  scale_color_viridis(discrete=TRUE) +
+  geom_text( data=annot, aes(x=x, y=y, label=text, color=text), hjust=0, size=4.5) +
+  theme_ipsum() +
+  theme(
+    legend.position="none",
+    panel.spacing = unit(0.1, "lines"),
+    strip.text.x = element_text(size = 8)
+  ) +
+  xlab("") +
+  ylab("Assigned Probability (%)")
 
 library(reshape2)
 data.melt <- melt(obs_waac_ldgr, varnames = c("plot", "index"), value.name = "ldgr")
