@@ -8,9 +8,9 @@ library(here)
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 
-FocalLetter <- "H" # "W", "A", "T", "H"
-FocalPrefix <- "HYGl" # "WAAC", "ARCA", "HYGL", "TRCY"
-FocalSpecies <- "Hypochaeris.glabra" # "Waitzia.acuminata", "Arctotheca.calendula", "Trachymene.cyanopetala", "Hypochaeris.glabra"
+FocalLetter <- "T" # "W", "A", "T", "H"
+FocalPrefix <- "TRCY" # "WAAC", "ARCA", "HYGL", "TRCY"
+FocalSpecies <- "Trachymene.cyanopetala" # "Waitzia.acuminata", "Arctotheca.calendula", "Trachymene.cyanopetala", "Hypochaeris.glabra"
 
 EnvCov <- "Phos" # "Phos" or "Shade"
 EnvCol <- 71  # 72 for Canopy or 71 for Phosphorous
