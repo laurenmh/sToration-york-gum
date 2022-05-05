@@ -55,7 +55,7 @@ slab_df <- 4
 DataVec <- c("N", "S", "Fecundity", "reserve", "SpMatrix", "env", "Intra", "tau0", "slab_scale", "slab_df")
 
 # Now run a perliminary fit of the model to assess parameter shrinkage
-PrelimFit <- stan(file = here("Topher model fits/BH_FH_Preliminary.stan"), data = DataVec, iter = 3000, 
+PrelimFit <- stan(file = here("Sparse_model_fits/BH_FH_Preliminary.stan"), data = DataVec, iter = 3000, 
                   chains = 3)
 PrelimPosteriors <- extract(PrelimFit)
 
@@ -98,7 +98,7 @@ sum(Inclusion_eij)
 
 DataVec <- c("N", "S", "Fecundity", "reserve", "SpMatrix", "env", "Intra",
                   "Inclusion_ij", "Inclusion_eij")
-FinalFit <- stan(file = here("Topher model fits/BH_Final.stan"), data = DataVec, iter = 3000, chains = 3)
+FinalFit <- stan(file = here("Sparse_model_fits/BH_Final.stan"), data = DataVec, iter = 3000, chains = 3)
 FinalPosteriors <- extract(FinalFit)
 
 # Diagnostic figures

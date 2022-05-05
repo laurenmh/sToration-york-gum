@@ -1,5 +1,5 @@
-// This script fits a Beverton-Holt generalized competition model using a Finnish (regularized) horseshoe prior (Piironen and Vehtari 2017) 
-// 	following the stan implementation demonstrated on https://betanalpha.github.io/assets/case_studies/bayes_sparse_regression.html
+// This script fits a Beverton-Holt competition model
+// after getting inclusion coefficients from our preliminary fit
 
 data{
   int<lower = 1> N;  // Number of plots
