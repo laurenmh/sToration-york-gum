@@ -1,0 +1,77 @@
+---
+title: "Proposed alternative model formulation"
+author: "D. G. Gannon"
+date: "5/5/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In the sparse Beverton-Holt model fits with varying slopes and intercepts for the linear model component for each species, we have
+
+$$
+\log(\alpha_{jn}) = \beta_0 + b_{0j} + (\beta_1 + b_{1j})x_n
+$$
+
+where I have dropped the $i$ subscripts that would index the focal species, $j$ indexes the competitor species, $n$ is the index for the measurement unit (plot), and $x_n$ is the $n^\text{th}$ measurement for the environmental covariate. Equivalently,
+
+$$
+\log(\alpha_{jn}) = {\bf x}_n^\top({\boldsymbol \beta}_\alpha + {\bf b}_j)
+$$
+
+where ${\bf x}_n = \begin{bmatrix}1 & x_n\end{bmatrix}^\top$ and ${\bf b}_j = \begin{bmatrix}b_{0j} & b_{1j}\end{bmatrix}^\top$. Thus, the model is equivalent to a regression model with slope $\beta_1$ and intercept $\beta_0$ and random/varying slopes and intercepts for each competing species. 
+
+To efficiently expand the model to incorporate more covariates as well as include flexibility in which environmental covariates may have species-specific values, we concatenate ${\bf b}_1, {\bf b}_2, ..., {\bf b}_S$, where $S$ is the total number of competing species that are not the focal species, into a matrix $\underset{(P_\delta \times S)}{\bf B}$, where $P_\delta$ is the number of covariates (including the intercept) that are allowed species-specific deviations from the mean. Also, let $\underset{(N\times P_\alpha)}{\bf X}$ be a standard regression model matrix for a model with an intercept and $P_\alpha-1$ covariates and $\underset{(N\times P_\delta)}{\bf Z}$ be a design matrix for the species-specific deviations from the mean effect. Then, we can have
+
+$$
+\log(\boldsymbol\alpha) = {\bf X}\boldsymbol\beta_\alpha{\bf 1}^\top + {\bf ZB}
+$$
+
+where ${\bf 1}$ is a vector of ones with dimension $S$, $\underset{(N\times S)}{\boldsymbol \alpha}$ is a matrix of competition coefficients adjusted for the environment and species, and the logarithm is taken element-wise.
+
+To complete the BH model and allow both intra-specific competition and low-density fecundity to vary with the environment, let
+
+$$
+\begin{aligned}
+\log(\boldsymbol\eta) &= {\bf X}_\eta{\boldsymbol \beta_\eta}\\
+&\text{and}\\
+\log({\boldsymbol \lambda}) &= {\bf X}_\lambda{\boldsymbol \beta}_\lambda,
+\end{aligned}
+$$
+
+where $\boldsymbol \eta$ is an $N$-vector of intra-specific competition coefficients that vary with the environment, $\boldsymbol \lambda$ is the vector of low-density seed production values. Thus, both are allowed to vary with the environment, but we could include different environmental variables for the models on $\boldsymbol \lambda$ and $\boldsymbol \eta$. Finally, let ${\bf c}$ be the vector of conspecific abundances in units $1,2,...,N$ and $\bf A$ be the $(N\times S)$ matrix of heterospecific abundances in each plot. Then, the model can be written as
+
+$$
+\begin{aligned}
+\mu_n &= \frac{\lambda_n}{1 + \eta_nc_n + {\boldsymbol \alpha}_n\cdot {\bf A}_n^\top},\\
+f_n &\sim \text{Poisson}(\mu_n)
+\end{aligned}
+$$
+
+where ${\boldsymbol \alpha}_n$ (${\bf A}_n$) is the $n^\text{th}$ row of $\boldsymbol \alpha$ (${\bf A}$), treated as a row-vector. 
+
+
+### Priors
+
+Sparsity-inducing priors can be including for the species-specific deviations from mean effects by:
+
+$$
+\begin{aligned}
+b_{p1}, b_{p2}, ..., b_{pS} &\overset{iid}{\sim} \mathcal{N}(0, \tau^2\tilde\xi_p^2)\\
+\tilde\xi_p^2 &= \frac{c^2\xi_p^2}{c^2 + \tau^2\xi_p^2}\\
+\xi_p &\sim \mathcal{C}^+(0,1)\\
+c^2 &\sim \text{inv-Gamma}\left(\frac{\nu}{2}, \frac{\nu s^2}{2}\right)\\
+\tau &\sim \mathcal{C}^+(0, \tau_0)
+\end{aligned}
+$$
+
+for $p=1,2,...,P_\delta$. 
+
+
+
+
+
+
+
