@@ -53,8 +53,8 @@ transformed parameters{
   matrix[N, S] alpha_mat;                         // NxS matrix of cometition coefficents
   
   // scale tau and c2
-  real c2 = slab_scale2*c2_std;   // tau ~ cauchy(0, tau0)
-  real tau = tau0*tau_std;        // c2 ~ inv_gamma(half_slab_df, half_slab_df*slab_scale2)
+  real c2 = slab_scale2*c2_std;                   // c2 ~ inv_gamma(half_slab_df, half_slab_df*slab_scale2)
+  real tau = tau0*tau_std;                        // tau ~ cauchy(0, tau0)
   
   // This calculation follows equation 2.8 in Piironen and Vehtari 2017
   matrix[P_alpha_d, S] local_scale_tilde = 
