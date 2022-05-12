@@ -29,7 +29,9 @@
   SpToKeep <- AllSpNames[SpTotals > 0 & AllSpNames != FocalSpecies]
   
 # create matrix A of heterospecific abundances
-  A <- AllSpAbunds[, which(names(AllSpAbunds) %in% SpToKeep)]
+  A <- as.matrix(
+    AllSpAbunds[, which(names(AllSpAbunds) %in% SpToKeep)]
+  )
   
 # create vector of conspecific abundances
   Consp_A <- AllSpAbunds[, which(names(AllSpAbunds) == FocalSpecies)]
@@ -51,14 +53,14 @@
 # model matrices for strength of intraspecific competition and LDGR
   # can differ from X_alpha if it makes sense
    X_lambda <- model.matrix(
-     ~ Reserve.x + Colwell.P_std + Reserve.x*Colwell.P_std, 
+     ~ Reserve.x*Colwell.P_std, 
      data = env_data
    )
    X_eta <- X_alpha
   
 # create model matrix for species-level deviations from the mean
   Z_alpha <- model.matrix(
-    ~ Reserve.x + Colwell.P_std + Reserve.x*Colwell.P_std - 1, 
+    ~ Reserve.x*Colwell.P_std - 1, 
     data = env_data
   )
 
@@ -89,7 +91,7 @@
   
 # compile stan model
   bhfh_matform <- stan_model(
-    file = "Sparse_model_fits/BH_FH_Preliminary2_matrix_form.stan",
+    file = here("Sparse_model_fits/BH_FH_Preliminary2_matrix_form.stan"),
     model_name = "bhfh_mf"
   )
   
@@ -100,7 +102,7 @@
   )
   
 # save model fit
-  saveRDS(mfit, file = "TRCY_Phos_bhfh_matform.rds")
+  saveRDS(mfit, file = here("Sparse_model_fits/TRCY_Phos_bhfh_matform_rep2.rds"))
   
 
 
