@@ -88,7 +88,7 @@ model{
     local_shrinkage_ij[i,] ~ cauchy(0,1);
 
     alpha_hat_eij_tilde[i,] ~ normal(0,1);
-    local_shrinkage_eij[i,] ~ normal(0,1);
+    local_shrinkage_eij[i,] ~ cauchy(0,1);
   }
   tau_tilde ~ cauchy(0,1);
   c2_tilde ~ inv_gamma(half_slab_df, half_slab_df);
