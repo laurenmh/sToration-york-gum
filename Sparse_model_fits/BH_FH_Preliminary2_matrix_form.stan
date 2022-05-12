@@ -9,7 +9,7 @@ data{
   int<lower = 1> P_eta;          // Number of covariates determining strength of intra-specific competition
   int<lower = 1> P_lambda;       // Number of covariates determining LDGR
   int Fecundity[N];              // Fecundity of the focal species in each plot
-  matrix[N, S] A;         // Matrix of abundances for each species (not including non-focal conspecifics)
+  matrix[N, S] A;                // Matrix of abundances for each species (not including non-focal conspecifics)
   vector[N] C;                   // vector of conspecific abundances in each plot
   matrix[N, P_alpha] X_alpha;    // model matrix for fixed effects
   matrix[N, P_alpha_d] Z_alpha;  // model matrix for species-level deviations from the mean
@@ -25,7 +25,7 @@ data{
 transformed data{
   real slab_scale2 = square(slab_scale);
   real half_slab_df = 0.5*slab_df;
-  vector[S] ones = rep_row_vector(1, S);
+  row_vector[S] ones = rep_row_vector(1, S);
 }
 
 parameters{
@@ -44,9 +44,17 @@ transformed parameters{
   // Calculate the scaled parameters needed for the regularized horeshoe prior here from the standardized (and thus easier to sample)
   // 	counterparts declared in the parameters block
   
+  vector[P_alpha] beta_alpha;                     // scaled and centered version of beta_alpha_std
+  vector[P_eta] beta_eta;                         // scaled and centered version of beta_eta_std
+  // vector[P_lambda] beta_lambda;                  // scaled and centered version of beta_lambda_std
+  
+  vector[N] eta;                                  // vector of intraspecific competition coefficients
+  vector[N] lambda;                               // vector of LDGRs
+  matrix[N, S] alpha_mat;                         // NxS matrix of cometition coefficents
+  
   // scale tau and c2
-  real c2 = slab_scale2*c2_std;   // tau ~ cauchy(0, tau0)
-  real tau = tau0*tau_std;        // c2 ~ inv_gamma(half_slab_df, half_slab_df*slab_scale2)
+  real c2 = slab_scale2*c2_std;                   // c2 ~ inv_gamma(half_slab_df, half_slab_df*slab_scale2)
+  real tau = tau0*tau_std;                        // tau ~ cauchy(0, tau0)
   
   // This calculation follows equation 2.8 in Piironen and Vehtari 2017
   matrix[P_alpha_d, S] local_scale_tilde = 
@@ -56,17 +64,16 @@ transformed parameters{
   matrix[P_alpha_d, S] B = tau * local_scale_tilde .* B_std;
   
   // scale and center the regression coefficients
-  vector[P_alpha] beta_alpha = 3 * beta_alpha_std - 6;
+  beta_alpha = beta_alpha_std * 0.5;
+  beta_alpha[1] = 3 * beta_alpha_std[1] - 6;
+  beta_eta = beta_eta_std * 0.5;
+  beta_eta[1] = 3 * beta_eta_std[1] - 6;
   
-  // construct alpha matrix of competition coefficients
-  matrix[N, S] alpha_mat = 
-    exp((X_alpha * beta_alpha) * ones + Z_alpha * B);
-    
-  // compute vector of intra-specific competitive effects
-  vector[N] eta = exp(X_eta * beta_eta_std);
-  
-  // compute vector of low-density fecudities
-  vector[N] lambda = exp(X_lambda * beta_lambda_std);
+  // transform from log-linear models
+  alpha_mat = exp((X_alpha * beta_alpha) * ones + Z_alpha * B);
+  eta = exp(X_eta * beta_eta);
+  lambda = exp(X_lambda * beta_lambda_std);
+
 
 }
 
@@ -91,7 +98,7 @@ model{
 
   // implement the biological model
   for(i in 1:N){
-    mu[i] = lambda[i] / (1 + eta[i] * C[i] + alpha_mat[i,] * A[i, ]')
+    mu[i] = lambda[i] / (1 + eta[i] * C[i] + alpha_mat[i,] * A[i, ]');
   }
   
   Fecundity ~ poisson(mu);

@@ -5,7 +5,7 @@ data{
   int<lower = 1> N; // Number of plots
   int<lower = 1> S; // Number of species
   int Fecundity[N]; // Fecundity of the focal species in each plot
-  int reserve[N];   // Indicator variable for the reserve each plot is located in
+  // int reserve[N];   // Indicator variable for the reserve each plot is located in
   matrix[N,S] SpMatrix; // Matrix of abundances for each species (including abundances of non-focal individuals of the focal species)
   vector[N] env;   // Environmental values for each plot
   int<lower = 0> Intra[S]; // Indicator boolean variable to identify the focal species (0 for non-focal and 1 for focal). Included for easier calculations
@@ -21,13 +21,18 @@ transformed data{
 }
 
 parameters{
-  matrix[2,2] lambdas;
+  //matrix[2,2] lambdas;
+  vector[2] lambdas;
   vector[2] alpha_generic_tilde;
   vector[2] alpha_intra_tilde;
-  matrix[2,S] alpha_hat_ij_tilde;
-  matrix[2,S] alpha_hat_eij_tilde;
-  matrix<lower = 0>[2,S] local_shrinkage_ij;
-  matrix<lower = 0>[2,S] local_shrinkage_eij;
+  //matrix[2,S] alpha_hat_ij_tilde;
+  vector[S] alpha_hat_ij_tilde;
+  //matrix[2,S] alpha_hat_eij_tilde;
+  vector[S] alpha_hat_eij_tilde;
+  //matrix<lower = 0>[2,S] local_shrinkage_ij;
+  vector<lower = 0>[S] local_shrinkage_ij;
+  //matrix<lower = 0>[2,S] local_shrinkage_eij;
+  vector<lower = 0>[S] local_shrinkage_eij;
   real<lower = 0> c2_tilde;
   real<lower = 0> tau_tilde;
 }
@@ -37,10 +42,14 @@ transformed parameters{
   // 	counterparts declared in the parameters block
   real c2;
   real tau;
-  matrix[2,S] alpha_hat_ij;
-  matrix[2,S] local_shrinkage_ij_tilde;
-  matrix[2,S] alpha_hat_eij;
-  matrix[2,S] local_shrinkage_eij_tilde;
+  //matrix[2,S] alpha_hat_ij;
+  vector[S] alpha_hat_ij;
+  //matrix[2,S] local_shrinkage_ij_tilde;
+  vector[S] local_shrinkage_ij_tilde;
+  //matrix[2,S] alpha_hat_eij;
+  vector[S] alpha_hat_eij;
+  //matrix[2,S] local_shrinkage_eij_tilde;
+  vector[S] local_shrinkage_eij_tilde;
   vector[2] alpha_generic;
   vector[2] alpha_intra;
 
@@ -48,15 +57,13 @@ transformed parameters{
   c2 = slab_scale2*c2_tilde;	// c2 ~ inv_gamma(half_slab_df, half_slab_df*slab_scale2)
 
   // This calculation follows equation 2.8 in Piironen and Vehtari 2017
-  for(i in 1:2){
     for(s in 1:S){
-      local_shrinkage_ij_tilde[i,s] = sqrt( c2 * square(local_shrinkage_ij[i,s]) / (c2 + square(tau) * square(local_shrinkage_ij[i,s])) );
-      alpha_hat_ij[i,s] = tau * local_shrinkage_ij_tilde[i,s] * alpha_hat_ij_tilde[i,s];
+      local_shrinkage_ij_tilde[s] = sqrt( c2 * square(local_shrinkage_ij[s]) / (c2 + square(tau) * square(local_shrinkage_ij[s])) );
+      alpha_hat_ij[s] = tau * local_shrinkage_ij_tilde[s] * alpha_hat_ij_tilde[s];
 
-      local_shrinkage_eij_tilde[i,s] = sqrt( c2 * square(local_shrinkage_eij[i,s]) / (c2 + square(tau) * square(local_shrinkage_eij[i,s])) );
-      alpha_hat_eij[i,s] = tau * local_shrinkage_eij_tilde[i,s] * alpha_hat_eij_tilde[i,s];
+      local_shrinkage_eij_tilde[s] = sqrt( c2 * square(local_shrinkage_eij[s]) / (c2 + square(tau) * square(local_shrinkage_eij[s])) );
+      alpha_hat_eij[s] = tau * local_shrinkage_eij_tilde[s] * alpha_hat_eij_tilde[s];
     }
-  }
 
   // scale the lambdas and alphas values
   alpha_generic[1] = 3 * alpha_generic_tilde[1] - 6;
@@ -77,27 +84,27 @@ model{
   // set regular priors
   alpha_generic_tilde ~ normal(0,1);
   alpha_intra_tilde ~ normal(0,1);
-  for(i in 1:2){
-    lambdas[i,] ~ normal(0, 1);
-  }
+  // for(i in 1:2){
+  //   lambdas[i,] ~ normal(0, 1);
+  // }
+  lambdas ~ std_normal();
 
   // set the hierarchical priors for the Finnish horseshoe (regularized horseshoe) (Piironen and Vehtari 2017)
   // Following the stan implementation from https://betanalpha.github.io/assets/case_studies/bayes_sparse_regression.html
-  for(i in 1:2){
-    alpha_hat_ij_tilde[i,] ~ normal(0,1);
-    local_shrinkage_ij[i,] ~ cauchy(0,1);
+  alpha_hat_ij_tilde ~ normal(0,1);
+  local_shrinkage_ij ~ cauchy(0,1);
+  
+  alpha_hat_eij_tilde ~ normal(0,1);
+  local_shrinkage_eij ~ cauchy(0,1);
 
-    alpha_hat_eij_tilde[i,] ~ normal(0,1);
-    local_shrinkage_eij[i,] ~ cauchy(0,1);
-  }
   tau_tilde ~ cauchy(0,1);
   c2_tilde ~ inv_gamma(half_slab_df, half_slab_df);
 
   // implement the biological model
   for(i in 1:N){
-    lambda_ei[i] = exp(lambdas[reserve[i],1] + lambdas[reserve[i],2] * env[i]);
+    lambda_ei[i] = exp(lambdas[1] + lambdas[2] * env[i]);
     for(s in 1:S){
-        alpha_eij[i,s] = exp((1-Intra[s]) * alpha_generic[1] + Intra[s] * alpha_intra[1] + (1-Intra[s]) * alpha_hat_ij[reserve[i],s] + ((1-Intra[s]) * alpha_generic[2] + (1-Intra[s]) * alpha_hat_eij[reserve[i],s] + Intra[s] * alpha_intra[2]) * env[i]);
+        alpha_eij[i,s] = exp((1-Intra[s]) * alpha_generic[1] + Intra[s] * alpha_intra[1] + (1-Intra[s]) * alpha_hat_ij[s] + ((1-Intra[s]) * alpha_generic[2] + (1-Intra[s]) * alpha_hat_eij[s] + Intra[s] * alpha_intra[2]) * env[i]);
     }
     interaction_effects[i] = sum(alpha_eij[i,] .* SpMatrix[i,]);
     

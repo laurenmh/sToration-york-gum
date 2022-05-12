@@ -20,7 +20,7 @@ SpData <- read.csv(here("water_full_env.csv"))
 SpData <- subset(SpData, select = -c(X.NA., Seedcount.extrapolated.integer))
 SpData <- na.omit(SpData) 
 FocalLetter
-SpDataFocal <- subset(SpData, Focal.sp.x == FocalLetter)
+SpDataFocal <- subset(SpData, Focal.sp.x == FocalLetter & Reserve.x == "perenjori")
 
 # Next continue to extract the data needed to run the model. 
 N <- as.integer(nrow(SpDataFocal))
@@ -52,11 +52,21 @@ Intra <- ifelse(SpNames == FocalSpecies, 1, 0)
 tau0 <- 1
 slab_scale <- sqrt(2)
 slab_df <- 4
-
-DataVec <- c("N", "S", "Fecundity", "reserve", "SpMatrix", "env", "Intra", "tau0", "slab_scale", "slab_df")
+datalist <- list(
+        N = N,
+        S = S,
+        Fecundity = Fecundity,
+        SpMatrix = SpMatrix,
+        env = env,
+        Intra = Intra,
+        tau0 = tau0,
+        slab_scale = slab_scale,
+        slab_df = slab_df
+)
+# DataVec <- c("N", "S", "Fecundity", "reserve", "SpMatrix", "env", "Intra", "tau0", "slab_scale", "slab_df")
 
 # Now run a perliminary fit of the model to assess parameter shrinkage
-PrelimFit <- stan(file = here("Sparse_model_fits/BH_FH_Preliminary.stan"), data = DataVec, iter = 3000, 
+PrelimFit <- stan(file = here("Sparse_model_fits/BH_FH_Preliminary_1site.stan"), data = datalist, 
                   chains = 3, cores = 3)
 PrelimPosteriors <- extract(PrelimFit)
 
