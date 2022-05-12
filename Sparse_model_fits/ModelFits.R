@@ -52,11 +52,12 @@ Intra <- ifelse(SpNames == FocalSpecies, 1, 0)
 tau0 <- 1
 slab_scale <- sqrt(2)
 slab_df <- 4
+
 DataVec <- c("N", "S", "Fecundity", "reserve", "SpMatrix", "env", "Intra", "tau0", "slab_scale", "slab_df")
 
 # Now run a perliminary fit of the model to assess parameter shrinkage
 PrelimFit <- stan(file = here("Sparse_model_fits/BH_FH_Preliminary.stan"), data = DataVec, iter = 3000, 
-                  chains = 3)
+                  chains = 3, cores = 3)
 PrelimPosteriors <- extract(PrelimFit)
 
 ##### Diagnostic plots
