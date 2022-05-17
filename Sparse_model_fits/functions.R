@@ -4,6 +4,38 @@
 
 
 
+
+#' Construct mapping from b_j to alpha_hat_j
+#'
+#' @param nsites Number of sites (reserves) at which data were collected
+#' @param ncovs Number of covariates (including the intercept) b_j
+#'
+#' @return Matrix of (nsites*ncovs) x (nsites*ncovs)
+#' @export
+#'
+#' @examples
+#' 
+construct_M_dc <- function(nsites = 2, ncovs){
+  message("Constructing M based on dummy coding for Z_alpha.\n
+          If Z_alpha was not constructed using dummy variables for the site,
+          this function will give the wrong result.")
+  
+  # build one block
+  M_sub <- diag(nsites)
+  M_sub[,1] <- rep(1, nsites)
+  
+  # expand to block diagonal matrix
+  Id <- diag(ncovs)
+  return(Id %x% M_sub)
+  
+}
+
+
+
+
+
+
+
 #' Reconstruct an array of species-specific deviations from generic values
 #' 
 #' Reconstruct an R x (P*nsites) x S array of species-specific deviations from
@@ -11,11 +43,10 @@
 #' of interest for each species in each site (e.g., 2 for intercept and one slope), and S is
 #' number of species.
 #'
-#' @param mm_new Matrix with one row for each parameter of interest (alpha_hat) for each
-#' site with 1's for model parameters necessary to reconstruct alpha_hat and zeros elsewhere.
-#' The matrix should be designed to construct b_0 for site 1 in row one, b_0 for site 2 in row 2, ...,
+#' @param M Matrix with one row for each parameter of interest (alpha_hat) mapping
+#' b_j to alpha_hat. The matrix should be designed to construct b_0 for site 1 in row one, b_0 for site 2 in row 2, ...,
 #' b_1 for site one in row nsites + 1, b_1 for site 2 in row nsites + 1, ...
-#' @param B_post Posterior draws from deviations matrix R x P_alpha_d x S
+#' @param B_post Array of posterior draws from deviations matrix (B) with dimensions R x P_alpha_d x S
 #' @param covnames Names of covariates of interest (including intercept) in the same order as the
 #' original model.matrix call for Z_alpha
 #' @param sitenames Site/reserve names in same order as levels of factor from model.matrix call for Z_alpha
@@ -26,15 +57,15 @@
 #' @examples
 #' 
 construct_alpha_hat <- function(
-  mm_new, B_post, covnames = c("int", "phos", "shade"), sitenames=c("bendering", "perenjori")
+  M, B_post, covnames = c("int", "phos", "shade"), sitenames=c("bendering", "perenjori")
 ){
   npars <- length(covnames)
   nsites <- length(sitenames)
   
   # double-check constraints
   if(
-    nrow(mm_new) != npars * nsites |
-    nrow(mm_new) != npars * nsites
+    nrow(M) != npars * nsites |
+    nrow(M) != npars * nsites
   ) {
     stop("Model matrix must be square with dimensions npars * nsites")
   }
@@ -56,7 +87,7 @@ construct_alpha_hat <- function(
 
   # compute parameters values of interest for each draw s from the posterior
   for(s in 1:dim(B_post)[1]){
-    alpha_hat_post[s,,] <- mm_new %*% B_post[s,,]
+    alpha_hat_post[s,,] <- M %*% B_post[s,,]
   }
   
   return(alpha_hat_post)
@@ -70,12 +101,11 @@ construct_alpha_hat <- function(
 
 
 
-#' Construct constraints on B matrix
+#' Construct constraints on alpha_hat matrix
 #'
 #' @param alpha_hat_draws R x P_alpha x S array of posterior draws from alpha_hat vector 
 #' constructed using the function \code(construct_alpha_hat())
 #' @param level Posterior credible level to construct interval
-#' @param mm_new Matrix used to construct alpha_hat_draws in call to \code(construct_alpha_hat())
 #' @param sp_names Optional vector of species names for tracking and checking purposes
 #'
 #' @return List with one matrix of alpha_hats to include and another with the corresponding constraints on B
@@ -83,7 +113,7 @@ construct_alpha_hat <- function(
 #'
 #' @examples
 #' 
-non_generic <- function(alpha_hat_draws, level = 0.5, mm_new, sp_names=NA){
+non_generic <- function(alpha_hat_draws, level = 0.5, sp_names=NA){
   
   # create Inclusion matrix
   # number of parameters
@@ -91,13 +121,6 @@ non_generic <- function(alpha_hat_draws, level = 0.5, mm_new, sp_names=NA){
   # number of heterospecifics
   S <- dim(alpha_hat_draws)[[3]]
   Inclusion <- matrix(
-    data = 0,
-    nrow = P,
-    ncol = S
-  )
-  
-  # construct constrained parameter matrix
-  B_constraints <- matrix(
     data = 0,
     nrow = P,
     ncol = S
@@ -119,29 +142,10 @@ non_generic <- function(alpha_hat_draws, level = 0.5, mm_new, sp_names=NA){
     }
   }
   
-  # construct constraint matrix for B
-  for(s in 1:S){
-    devs <- which(Inclusion[,s] == 1)
-    if(length(devs) > 0){
-      B_constraints[,s] <- colSums(mm_new[devs, , drop=FALSE])
-    }
-  }
-  
-  # reset occasions where param was counted twice because it 
-  #  deviates from generic values in both sites
-  B_constraints[B_constraints > 0] <- 1
-  
-  return(list(
-    deviations = Inclusion,
-    B_constraints = B_constraints
-  ))
+  return(Inclusion)
   
 }
   
-
-
-
-
 
 
 
