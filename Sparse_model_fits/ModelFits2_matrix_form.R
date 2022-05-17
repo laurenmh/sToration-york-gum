@@ -46,22 +46,33 @@
   
 # model matrix for "generic" effects
   X_alpha <- model.matrix(
-    ~ Colwell.P_std + Canopy_std, 
+    ~ Colwell.P_std, # + Canopy_std, 
     data = env_data
   )
   
 # model matrices for strength of intraspecific competition (X_eta) and LDGR (X_lambda)
   # can differ from X_alpha if it makes sense
    X_lambda <- model.matrix(
-     ~ Reserve.x*Colwell.P_std*Canopy_std, 
+     ~ Reserve.x * Colwell.P_std, # *Canopy_std, 
      data = env_data
    )
    X_eta <- X_alpha
   
 # create model matrix for species-level deviations from the mean
   Z_alpha <- model.matrix(
-    ~ Reserve.x*Colwell.P_std + Reserve.x*Canopy_std - 1, 
+    ~ Reserve.x*Colwell.P_std, # + Reserve.x*Canopy_std - 1, 
     data = env_data
+  )
+  
+# define mapping from parameter vectors b_1, b_2, ..., b_S to alpha_hat_1, alpha_hat_2,...
+#  (see "alt_model_form_ideas.pdf" for more details)
+  M <- rbind(
+    c(1,0,0,0),
+    c(1,1,0,0),
+    c(0,0,1,0),
+    c(0,0,1,1)
+    # c(0,0,0,0,1,0),
+    # c(0,0,0,0,1,1)
   )
 
 # define hyperpriors for Finnish Horseshoe
@@ -83,6 +94,7 @@
     C = Consp_A,
     X_alpha = X_alpha,
     Z_alpha = Z_alpha,
+    M = M,
     X_lambda = X_lambda,
     X_eta = X_eta,
     tau0 = tau0,
@@ -99,12 +111,12 @@
 # fit the model
   mfit <- sampling(
     bhfh_matform, data = data_list, 
-    chains=2, iter = 3000, cores=2,
-    control=list(adapt_delta = 0.9, max_treedepth=15)
+    chains=3, iter = 3000, cores=3
+    # control=list(adapt_delta = 0.9, max_treedepth=15)
   )
   
 # save model fit
-  saveRDS(mfit, file = here("Sparse_model_fits/TRCY_Phos_bhfh_matform_rep2.rds"))
+  saveRDS(mfit, file = here("Sparse_model_fits/archive/model_reform_checks/TRCY_Phos_bhfh_matform.rds"))
   
 
 
