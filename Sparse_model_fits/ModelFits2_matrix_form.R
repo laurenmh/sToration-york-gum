@@ -101,7 +101,7 @@
   
 # compile stan model
   bhfh_matform <- stan_model(
-    file = here("Sparse_model_fits/BH_FH_Preliminary2_matrix_form.stan"),
+    file = here("Sparse_model_fits/Stan/BH_FH_Preliminary2_matrix_form.stan"),
     model_name = "bhfh_mf"
   )
   
@@ -111,9 +111,7 @@
     chains=3, iter = 3000, cores=3
     # control=list(adapt_delta = 0.9, max_treedepth=15)
   )
-  
-# save model fit
-#  saveRDS(mfit, file = here("Sparse_model_fits/archive/model_reform_checks/TRCY_Phos_bhfh_matform.rds"))
+
   
 # diagnostics
   check_divergences(mfit)
@@ -136,7 +134,7 @@
   
 # refit the model with the new constraint matrix Q and std_normal() priors on remaining alpha_hats
   bh_matform <- stan_model(
-    file = here("Sparse_model_fits/BH_Final2_matrix_form.stan"),
+    file = here("Sparse_model_fits/Stan/BH_Final2_matrix_form.stan"),
     model_name = "bh_mf"
   )
   
