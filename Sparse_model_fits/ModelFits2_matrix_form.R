@@ -5,7 +5,7 @@
 
   rm(list = ls())
   library(rstan)
-#  library(here)
+  library(here)
   options(mc.cores = parallel::detectCores())
   rstan_options(auto_write = TRUE)
 
@@ -20,7 +20,7 @@
   FocalLetter
   SpDataFocal <- subset(SpData, Focal.sp.x == FocalLetter)
 
-# Now calculate the total number of species to use for the model, discounting
+# Now calculate the total number of (non-focal) species to use for the model, discounting
   #   any species columns with 0 abundance. Save a vector of the species names
   #   corresponding to each column for easy matching later.
   AllSpAbunds <- SpDataFocal[,10:69]
@@ -46,21 +46,21 @@
   
 # model matrix for "generic" effects
   X_alpha <- model.matrix(
-    ~ Colwell.P_std, 
+    ~ Colwell.P_std + Canopy_std, 
     data = env_data
   )
   
-# model matrices for strength of intraspecific competition and LDGR
+# model matrices for strength of intraspecific competition (X_eta) and LDGR (X_lambda)
   # can differ from X_alpha if it makes sense
    X_lambda <- model.matrix(
-     ~ Reserve.x*Colwell.P_std, 
+     ~ Reserve.x*Colwell.P_std*Canopy_std, 
      data = env_data
    )
    X_eta <- X_alpha
   
 # create model matrix for species-level deviations from the mean
   Z_alpha <- model.matrix(
-    ~ Reserve.x*Colwell.P_std - 1, 
+    ~ Reserve.x*Colwell.P_std + Reserve.x*Canopy_std - 1, 
     data = env_data
   )
 
@@ -68,6 +68,7 @@
   tau0 <- 1
   slab_scale <- sqrt(2)
   slab_df <- 4
+  Fecundity <- as.integer(SpDataFocal$Number.flowers.total)
   
 # compile data into list for model fitting
   data_list <- list(
@@ -77,7 +78,7 @@
     P_alpha_d = ncol(Z_alpha),
     P_eta = ncol(X_eta),
     P_lambda = ncol(X_lambda),
-    Fecundity = as.integer(SpDataFocal$Number.flowers.total),
+    Fecundity = Fecundity,
     A = A,
     C = Consp_A,
     X_alpha = X_alpha,
@@ -98,7 +99,8 @@
 # fit the model
   mfit <- sampling(
     bhfh_matform, data = data_list, 
-    chains=3, iter = 3000, cores=3
+    chains=2, iter = 3000, cores=2,
+    control=list(adapt_delta = 0.9, max_treedepth=15)
   )
   
 # save model fit
