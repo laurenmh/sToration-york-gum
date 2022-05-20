@@ -15,7 +15,7 @@
   FocalLetter <- "T" # "W", "A", "T", "H"
   FocalPrefix <- "TRCY" # "WAAC", "ARCA", "HYGL", "TRCY"
   FocalSpecies <- "Trachymene.cyanopetala" # "Waitzia.acuminata", "Arctotheca.calendula", "Trachymene.cyanopetala", "Hypochaeris.glabra"
-  mod <- "PSI-lambda_PS_alpha" # Phosphorous + shade + interaction for lambda, phosphorous + shade for alpha
+  mod <- "PSI-lambda_PS-alpha" # Phosphorous + shade + interaction for lambda, phosphorous + shade for alpha
   
 # Load in the data and subset out the current focal species.
   SpData <- read.csv("water_full_env.csv")
@@ -64,13 +64,13 @@
   
 # create model matrix for species-level deviations from the mean
   Z_alpha <- model.matrix(
-    ~ Reserve.x*Colwell.P_std + Reserve.x*Canopy_std, 
+    ~ Reserve.x * Colwell.P_std + Reserve.x * Canopy_std, 
     data = env_data
   )
   
 # define mapping from parameter vectors b_1, b_2, ..., b_S to alpha_hat_1, alpha_hat_2,...
 #  (see "alt_model_form_ideas.pdf" and "functions.R" for more details)
-  M <- construct_M_dc(ncovs = 3)
+  M <- construct_M(2, int = F)
 
 # define hyperpriors for Finnish Horseshoe
   tau0 <- 1
@@ -125,12 +125,13 @@
   alpha_hat_post <- construct_alpha_hat(
     M,
     B_post = rstan::extract(mfit, pars="B")[[1]],
-    covnames = c("Int", "Phos")
+    ncovs = 3,
+    covnames = c("Int", "Phos", "Shade")
   )
   
 # find which alpha_hat posteriors pulled away sufficiently from zero
 #  function documentation in functions.R file
-  Q <- non_generic(alpha_hat_post)
+  Q <- non_generic(alpha_hat_post, all_devs = F)
   
 # refit the model with the new constraint matrix Q and std_normal() priors on remaining alpha_hats
   bh_matform <- stan_model(
@@ -164,13 +165,41 @@
     # control=list(adapt_delta = 0.9, max_treedepth=15)
   )
   
+# perform some posterior predictive checks for the final model
+  y_rep <- rstan::extract(mfit_final, pars = "y_rep")[[1]]
+  ppc_list <- ppcs(y_rep, obs = Fecundity)
+  
 # save results to file
   FileName <- paste(here("Sparse_model_fits/"), FocalPrefix, "_", mod, "_FinalFit.rdata", sep = "")
   save(mfit_final, data_prelim, data_final, file = FileName)
   
+# model form for lambda
+  mform <- formula("~ reserve * phos_std * shade_std")
+  
+# estimates
+  beta_lambda_be <- colMeans(
+    rstan::extract(mfit_final, pars = "beta_lambda")[[1]]
+  )
+  
+# save plot for lambda
+  ggsave(
+    filename = here("Figures/TRCY_heatmap_lambda.png"),
+    plot = plot_heatmap(mform, param_estims = beta_lambda_be, sp_name = "TRCY", option = "cividis"),
+    height = 3.5,
+    width = 7,
+    units = "in"
+  )
+
   
   
   
-    
+  
+  
+  
+  
+  
+  
+  
+  
   
   
