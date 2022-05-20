@@ -16,7 +16,7 @@ data{
   matrix[N, P_alpha] X_alpha;      // model matrix for fixed effects
   matrix[N, P_alpha_d] Z_alpha;    // model matrix for species-level deviations from the mean
   matrix[P_alpha_d, P_alpha_d] M;  // mapping from b parameters to alpha_hat
-  matrix[P_alpha_d, S] Q;  // matrix of 0's and 1's to constrain some alpha_hats to zero
+  matrix[P_alpha_d, S] Q;          // matrix of 0's and 1's to constrain some alpha_hats to zero
   matrix[N, P_eta] X_eta;          // model matrix for modeling variability in the stength of intra-specific competition
   matrix[N, P_lambda] X_lambda;    // model matrix for modeling variability in the LDGR
 }
@@ -40,6 +40,7 @@ transformed parameters{
   vector[P_alpha] beta_alpha;                     // scaled and centered version of beta_alpha_std
   vector[P_eta] beta_eta;                         // scaled and centered version of beta_eta_std
   vector[P_lambda] beta_lambda;                   // scaled and centered version of beta_lambda_std
+  vector[N] mu;                                   // means based on BH model
   
   vector[N] eta;                                  // vector of intraspecific competition coefficients
   vector[N] lambda;                               // vector of LDGRs
@@ -59,13 +60,16 @@ transformed parameters{
   alpha_mat = exp((X_alpha * beta_alpha) * ones + Z_alpha * B);
   eta = exp(X_eta * beta_eta);
   lambda = exp(X_lambda * beta_lambda);
+  
+  // construct means based on BH model
+  for(i in 1:N){
+    mu[i] = lambda[i] / (1 + eta[i] * C[i] + alpha_mat[i,] * A[i, ]');
+  }
 
 }
 
 model{
-  // Declare vector of expected fecundity values (mu),
-  vector[N] mu;
-
+  
   // Priors
   beta_lambda_std ~ std_normal();
   beta_eta_std ~ std_normal();
@@ -74,11 +78,16 @@ model{
     alpha_hat_std[p, ] ~ std_normal();
   }
 
-  // implement the biological model
-  for(i in 1:N){
-    mu[i] = lambda[i] / (1 + eta[i] * C[i] + alpha_mat[i,] * A[i, ]');
-  }
-  
+  // Likelihood
   Fecundity ~ poisson(mu);
+  
+}
+
+generated quantities{
+  
+  int y_rep[N];
+  
+  // generate samples for posterior predictive checks
+  y_rep = poisson_rng(mu);
   
 }
