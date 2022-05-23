@@ -6,8 +6,8 @@ library(tidyverse)
 library(rlang)
 
 # load the model fits
-  trcy_mat <- readRDS(here("Sparse_model_fits/TRCY_Phos_bhfh_matform_rep2.rds"))
-  trcy_og <- readRDS(here("Sparse_model_fits/TRCY_Phos_bhfh_og.rds"))
+  trcy_mat <- readRDS(here("Sparse_model_fits/archive/model_reform_checks/TRCY_Phos_bhfh_matform.rds"))
+  trcy_og <- readRDS(here("Sparse_model_fits/archive/model_reform_checks/TRCY_Phos_bhfh_og.rds"))
                       
 # check that parameter posteriors are similar
   checks <- tibble(

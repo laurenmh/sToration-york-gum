@@ -1,7 +1,7 @@
 ---
 title: "Proposed alternative model formulation"
 author: "D. G. Gannon"
-date: "5/5/2022"
+date: "5/17/2022"
 output: pdf_document
 ---
 
@@ -12,18 +12,38 @@ knitr::opts_chunk$set(echo = TRUE)
 In the sparse Beverton-Holt model fits with varying slopes and intercepts for the linear model component for each species, we have
 
 $$
-\log(\alpha_{jn}) = \beta_0 + b_{0j} + (\beta_1 + b_{1j})x_n
+\log(\alpha_{jn}) = \beta_0 + \hat\alpha_{0j} + (\beta_1 + \hat\alpha_{1j})x_n
 $$
 
 where I have dropped the $i$ subscripts that would index the focal species, $j$ indexes the competitor species, $n$ is the index for the measurement unit (plot), and $x_n$ is the $n^\text{th}$ measurement for the environmental covariate. Equivalently,
 
 $$
-\log(\alpha_{jn}) = {\bf x}_n^\top({\boldsymbol \beta}_\alpha + {\bf b}_j)
+\log(\alpha_{jn}) = {\bf x}_n^\top({\boldsymbol \beta}_\alpha + \hat{\boldsymbol \alpha}_j)
 $$
 
-where ${\bf x}_n = \begin{bmatrix}1 & x_n\end{bmatrix}^\top$ and ${\bf b}_j = \begin{bmatrix}b_{0j} & b_{1j}\end{bmatrix}^\top$. Thus, the model is equivalent to a regression model with slope $\beta_1$ and intercept $\beta_0$ and random/varying slopes and intercepts for each competing species. 
+where ${\bf x}_n = \begin{bmatrix}1 & x_n\end{bmatrix}^\top$ and $\hat{\boldsymbol \alpha}_j = \begin{bmatrix}\hat\alpha_{0j} & \hat\alpha_{1j}\end{bmatrix}^\top$. Thus, the model is equivalent to a (generalized) regression model with slope $\beta_1$ and intercept $\beta_0$ and random/varying slopes and intercepts for each competing species. 
 
-To efficiently expand the model to incorporate more covariates as well as include flexibility in which environmental covariates may have species-specific values, we concatenate ${\bf b}_1, {\bf b}_2, ..., {\bf b}_S$, where $S$ is the total number of competing species that are not the focal species, into a matrix $\underset{(P_\delta \times S)}{\bf B}$, where $P_\delta$ is the number of covariates (including the intercept) that are allowed species-specific deviations from the mean. Also, let $\underset{(N\times P_\alpha)}{\bf X}$ be a standard regression model matrix for a model with an intercept and $P_\alpha-1$ covariates and $\underset{(N\times P_\delta)}{\bf Z}$ be a design matrix for the species-specific deviations from the mean effect. Then, we can have
+To efficiently expand the model to incorporate more covariates as well as include flexibility in which environmental covariates may have species-specific values, we can formulate the model using model matrices for the linear components of the model along with parameter vectors and matrices. First, let ${\bf b}_j = {\bf M}^{-1} \hat {\boldsymbol \alpha}_j$, where $\bf M$ is a $\mathbb{R}^{P_\delta} \to \mathbb{R}^{P_\delta}$ linear transformation that maps ${\bf b}_j \to \hat{\boldsymbol \alpha}_j$ and $P_\delta$ is the number of covariates (including the intercept) that are allowed species-specific deviations from the mean. The reason for the reparameterization from $\hat{\boldsymbol\alpha}_j$ to ${\bf b}_j$ is that we want to include interactions between indicator variables for the site (reserve) and the continuous environmental covariates in the model matrices to efficiently model competitive interactions across multiple sites that are treated as "fixed effects" (i.e., not hierarchical). For example, let 
+
+$$
+\log(\alpha_{jnr}) = \beta_0 + \hat\alpha_{0jr} + (\beta_1 + \hat\alpha_{1jr})x_n
+$$
+
+be the log-competitive effect of species $j$ in site $r$ and environment $n$. As an example, assume there are two sites (reserves). We could equivalently utilize an indicator variable for the site and reparameterize the model such that
+
+$$
+\begin{aligned}
+\log(\alpha_{jn}) &= (\beta_0 + \beta_1x_n) + (b_{0j} + b_{1j}z_n + b_{2j}x_n + b_{3j}x_nz_n)\\
+\implies b_{0j} & = \hat\alpha_{0j1}\\
+b_{1j} & = \hat\alpha_{0j2} - \hat\alpha_{0j1}\\
+b_{2j} & = \hat\alpha_{1j1}\\
+b_{3j} & = \hat\alpha_{1j2} - \hat\alpha_{1j1}\\
+\end{aligned}
+$$
+
+where $z_n = 1$ if observation $n$ is from the first site (reserve) and $z_n = 0$ otherwise and we drop the third index for the site ($r$) since it is encoded in $z_n$. This allows us to use standard dummy coding of the model matrix for the species-specific deviations across multiple sites (however, this is only efficient for models with a few sites and the $\hat{\boldsymbol\alpha}_j$ parameters from many sites  [$\ge 5$] should likely be modeled in a hierarchical manner instead). 
+
+Next, we can concatenate ${\bf b}_1, {\bf b}_2, ..., {\bf b}_S$, where $S$ is the total number of competing species that are not the focal species, into a matrix $\underset{(P_\delta \times S)}{\bf B}$. Also, let $\underset{(N\times P_\alpha)}{\bf X}$ be a standard regression model matrix for a model with an intercept and $P_\alpha-1$ covariates and $\underset{(N\times P_\delta)}{\bf Z}$ be a design matrix for the species-specific deviations from the mean effect. Then, we can have
 
 $$
 \log(\boldsymbol\alpha) = {\bf X}\boldsymbol\beta_\alpha{\bf 1}^\top + {\bf ZB}
@@ -55,11 +75,11 @@ where ${\boldsymbol \alpha}_n$ (${\bf A}_n$) is the $n^\text{th}$ row of $\bolds
 
 ### Priors
 
-Sparsity-inducing priors can be including for the species-specific deviations from mean effects by:
+Sparsity-inducing priors can be included for the species-specific deviations from mean effects by:
 
 $$
 \begin{aligned}
-b_{p1}, b_{p2}, ..., b_{pS} &\overset{iid}{\sim} \mathcal{N}(0, \tau^2\tilde\xi_p^2)\\
+\hat\alpha_{p1}, \hat\alpha_{p2}, ..., \hat\alpha_{pS} &\overset{iid}{\sim} \mathcal{N}(0, \tau^2\tilde\xi_p^2)\\
 \tilde\xi_p^2 &= \frac{c^2\xi_p^2}{c^2 + \tau^2\xi_p^2}\\
 \xi_p &\sim \mathcal{C}^+(0,1)\\
 c^2 &\sim \text{inv-Gamma}\left(\frac{\nu}{2}, \frac{\nu s^2}{2}\right)\\
@@ -67,9 +87,13 @@ c^2 &\sim \text{inv-Gamma}\left(\frac{\nu}{2}, \frac{\nu s^2}{2}\right)\\
 \end{aligned}
 $$
 
-for $p=1,2,...,P_\delta$. 
+where $p=1,2,...,P_\delta$ is the $p^\text{th}$ element of $\hat{\boldsymbol \alpha}_j$. Note that this implies that, since $b_{pj} = ({\bf M}^{-1})_p\hat{\boldsymbol\alpha}_j$, where $({\bf M}^{-1})_p$ is the $p^\text{th}$ row of ${\bf M}^{-1}$ (treated as a row vector), the prior for $b_{pj}$ is
 
+$$
+b_{pj} \sim \mathcal{N}\left(0,\ \tau^2\tilde\xi_p^2 \times ({\bf MM}^\top)_{pp}\right),
+$$
 
+where the notation ${\bf Q}_{pp}$ is the $p^\text{th}$ diagonal element of ${\bf Q}$.
 
 
 
