@@ -25,10 +25,17 @@ Naming conventions: "focal species code"_"model"_FinalFit.rdata
   * Shade -- Log-linear model on LDGR with canopy cover (shade) as a covariate. Log-linear model on competition coefficients (alpha) with canopy cover as a covariate. Some competing species are allowed to deviate from global average linear model [(Weiss-Lehman et al. 2022)](https://onlinelibrary.wiley.com/doi/10.1111/ele.13977).
   * `{PSI}-lambda_{PSI}-alpha` -- Log-linear model on LDGR (lambda) with phosphorous (P), shade (S), and/or the interaction between them (I) as covariates. Log-linear model on competition coefficients (alpha) with phosphorous (P), shade (S), and/or the interaction between them (I) as covariates. Some competing species are allowed to deviate from global average linear model.
   
-## Functions
+## Functions (`functions.R`)
 
-* `construct_M(n_env_covs, int = F)`: 
-  
+* `construct_M(n_env_covs, int = F)`: Construct a linear map from the linear model parameters to the deviations from the global mean effects (alpha_hat_eij) for each site (Bendering, Perenjori) based on 0, 1, or 2 environmental covariates, with and without the interaction between two environmental covariates.
+
+* `construct_alpha_hat(M, B_post, ncovs, covnames, sitenames=c("bendering", "perenjori"))`: Construct array of draws from the posterior distribution of the alpha_hat vector for each competitor species based on the mapping `M` from B -> alpha_hat. 
+
+* `non_generic(alpha_hat_draws, level = 0.5, sp_names=NA, all_devs = F)`: Determine which species' effects differ substantially from the overall mean effect based on which alpha_hat parameter posterior distributions pull away from zero.
+
+* `ppcs(y_rep, obs, plot = T, pred_level = 0.95)`: Posterior predictive checks of the model fit.
+
+* `plot_heatmap(m_formula, param_estims, sp_name, ncells = 100, dem_param = "lambda", ...)`: Create a heatmap of LDGR or another demographic parameter with phosphorous on one axis and canopy on the other.
   
   
   
