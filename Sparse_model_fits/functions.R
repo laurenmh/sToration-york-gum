@@ -98,7 +98,7 @@ construct_M <- function(n_env_covs, int = F){
 #' @examples
 #' 
 construct_alpha_hat <- function(
-  M, B_post, ncovs, covnames = NULL, sitenames=c("bendering", "perenjori")
+  M, B_post, ncovs, covnames, sitenames=c("bendering", "perenjori")
 ){
   npars <- ncovs
   nsites <- length(sitenames)
@@ -117,11 +117,11 @@ construct_alpha_hat <- function(
   )
   
   # construct a vector of parameter names for clarity
-  b_j <- paste("b", covnames, sep = "_")
-  parnames <- vector(mode="character", length(b_j) * nsites)
-  for(i in 1:length(b_j)){
+  alpha_hat_j <- paste("alpha_hat", covnames, sep = "_")
+  parnames <- vector(mode="character", length(alpha_hat_j) * nsites)
+  for(i in 1:length(alpha_hat_j)){
     for(j in 1:nsites){
-      parnames[nsites*(i - 1) + j] <- paste(b_j[i], sitenames[j], sep = "_")
+      parnames[nsites*(i - 1) + j] <- paste(alpha_hat_j[i], sitenames[j], sep = "_")
     }
   }
   dimnames(alpha_hat_post)[[2]] <- parnames
@@ -152,7 +152,7 @@ construct_alpha_hat <- function(
 #' with at least one alpha_hat that shows deviation from zero. If false, all but the alpha_hat 
 #' whose posterior pulls away from zero will be constrained.
 #'
-#' @return List with one matrix of alpha_hats to include and another with the corresponding constraints on B
+#' @return Matrix of alpha_hats to include in the final model fit
 #' @export
 #'
 #' @examples
@@ -268,16 +268,37 @@ ppcs <- function(y_rep, obs, plot = T, pred_level = 0.95){
 
 
 
+
+
+
+
+
+
+#' Plot a heatmap for a demographic parameter of interest
+#'
+#' @param m_formula Model formula used for the linear model component modeling the demographic
+#' parameter of interest (should be in the same form as in the ModelFits2 script).
+#' @param param_estims Bayes or other point estimator for the linear model coefficients
+#' @param sp_name Name of the focal species
+#' @param ncells Number of cells on a side for the heatmap
+#' @param dem_param Demographic parameter of interest (e.g., lambda, alpha, etc.)
+#' @param ... Additional options passed to the plotting function. Currently only takes a "viridis" color ramp option (see example).
+#'
+#' @return Two-panel heatmap plot, one for Bendering, the other for Perenjori.
+#' @export
+#'
+#' @examples
+#' 
 plot_heatmap <- function(m_formula, param_estims, sp_name, ncells = 100, dem_param = "lambda", ...){
   
-  library(patchwork)
+  library(patchwork, quietly = T)
   arg_list <- list(...)
   if(is.null(arg_list$option)){arg_list$option <- "inferno"}
   # construct new df
   df_new <- data.frame(
-    reserve = as.factor(rep(c("Bendering", "Perenjori"), each = ncells^2)),
-    phos_std = rep(rep(seq(-1, 1, length.out = ncells), ncells), 2),
-    shade_std = rep(rep(seq(-1, 1, length.out = ncells), each = ncells), 2)
+    Reserve.x = as.factor(rep(c("Bendering", "Perenjori"), each = ncells^2)),
+    Colwell.P_std = rep(rep(seq(-1, 1, length.out = ncells), ncells), 2),
+    Canopy_std = rep(rep(seq(-1, 1, length.out = ncells), each = ncells), 2)
   )
   
   # construct model matrix
@@ -296,11 +317,11 @@ plot_heatmap <- function(m_formula, param_estims, sp_name, ncells = 100, dem_par
 
 
   bend <- with(arg_list, {
-    ggplot(data = subset(df_new, reserve == "Bendering"))+
+    ggplot(data = subset(df_new, Reserve.x == "Bendering"))+
       geom_tile(
-        aes(x = phos_std, y = shade_std, fill = pred)
+        aes(x = Colwell.P_std, y = Canopy_std, fill = pred)
       )+
-      scale_fill_viridis(option = arg_list$option, discrete = F)+
+      viridis::scale_fill_viridis(option = arg_list$option, discrete = F)+
       scale_x_continuous(expand = c(0, 0))+
       scale_y_continuous(expand = c(0, 0))+
       ggtitle("Bendering")+
@@ -311,11 +332,11 @@ plot_heatmap <- function(m_formula, param_estims, sp_name, ncells = 100, dem_par
   })
   
   pere <- with(arg_list, {
-    ggplot(data = subset(df_new, reserve == "Perenjori"))+
+    ggplot(data = subset(df_new, Reserve.x == "Perenjori"))+
       geom_tile(
-        aes(x = phos_std, y = shade_std, fill = pred)
+        aes(x = Colwell.P_std, y = Canopy_std, fill = pred)
       )+
-      scale_fill_viridis(option = arg_list$option, discrete = F)+
+      viridis::scale_fill_viridis(option = arg_list$option, discrete = F)+
       scale_x_continuous(expand = c(0, 0))+
       scale_y_continuous(expand = c(0, 0))+
       ggtitle("Perenjori")+
