@@ -12,9 +12,9 @@
 # load helper functions
   source(here("Sparse_model_fits/functions.R"))
 
-  FocalLetter <- "H" # "W", "A", "T", "H"
-  FocalPrefix <- "HYGL" # "WAAC", "ARCA", "HYGL", "TRCY"
-  FocalSpecies <- "Hypochaeris.glabra" # "Waitzia.acuminata", "Arctotheca.calendula", "Trachymene.cyanopetala", "Hypochaeris.glabra"
+  FocalLetter <- "A" # "W", "A", "T", "H"
+  FocalPrefix <- "ARCA" # "WAAC", "ARCA", "HYGL", "TRCY"
+  FocalSpecies <- "Arctotheca.calendula" # "Waitzia.acuminata", "Arctotheca.calendula", "Trachymene.cyanopetala", "Hypochaeris.glabra"
   mod <- "PSI-lambda_PSI-alpha" # Phosphorous + shade + interaction for lambda, phosphorous + shade + interaction for alpha
   
 # Load in the data and subset out the current focal species.
