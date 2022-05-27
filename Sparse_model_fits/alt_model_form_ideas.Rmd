@@ -72,6 +72,24 @@ $$
 
 where ${\boldsymbol \alpha}_n$ (${\bf A}_n$) is the $n^\text{th}$ row of $\boldsymbol \alpha$ (${\bf A}$), treated as a row-vector. 
 
+### Including effects for plots and blocks
+
+In order to additionally account for correlation within a plot or block, we include effects for plots nested within blocks by modifying $\mu_n$ with
+
+$$
+\mu_n = \frac{\lambda_n}{1 + \eta_nc_n + {\boldsymbol \alpha}_n\cdot {\bf A}_n^\top}\times \exp\{{\bf z}_{n1}^\top {\bf u}_1 + {\bf z}_{n2}^\top {\bf u}_2 \}
+$$
+
+where $u_{11}, u_{12}, ..., u_{1K_\text{plot}}$ are effects for the plots $1, 2, ..., K_\text{plot}$, and $u_{21}, u_{22}, ..., u_{2K_\text{block}}$ are effects for the blocks $1, 2, ..., K_\text{block}$. The vector ${\bf z}_{n1}$ and ${\bf z}_{n2}$ have a 1 in the element corresponding to the plot and block (respectively) for observation $n$. We assume that
+
+$$
+\begin{aligned}
+{\bf u}_1 &\sim \mathcal{N}({\bf 0},\ \sigma_1^2I_{K_\text{plot}})\\
+{\bf u}_2 &\sim \mathcal{N}({\bf 0},\ \sigma_2^2I_{K_\text{block}}),
+\end{aligned}
+$$
+
+where $I_{K_\text{plot}}$ is the identity matrix with dimensions $K_\text{plot}$.
 
 ### Priors
 
@@ -93,9 +111,6 @@ $$
 b_{pj} \sim \mathcal{N}\left(0,\ \tau^2\tilde\xi_p^2 \times ({\bf MM}^\top)_{pp}\right),
 $$
 
-where the notation ${\bf Q}_{pp}$ is the $p^\text{th}$ diagonal element of ${\bf Q}$.
-
-
-
+where the notation ${\bf Q}_{pp}$ is the $p^\text{th}$ diagonal element of ${\bf Q}$. We include half-Student's-$t(2)$ priors for $\sigma_1$ and $\sigma_2$.
 
 
