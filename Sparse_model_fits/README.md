@@ -6,7 +6,7 @@ As of May 27, 2022, models do not appear to capture all the variability and stru
 
 ## Stan folder
 
-Stan programs for different variants of the Beverton-Holt model. For full descriptions of the model encoded in the files `BH_FH_Preliminary.stan` and `BH_Final.stan`, see [Weiss-Lehman et al. (2022)](https://onlinelibrary.wiley.com/doi/10.1111/ele.13977). For descriptions of the models encoded in `BH_FH_Preliminary2_matrix_form.stan`, see [alt_model_form_ideas.pdf](https://github.com/laurenmh/sToration-york-gum/blob/combine-env-covs/Sparse_model_fits/alt_model_form_ideas.pdf).
+Stan programs for different variants of the Beverton-Holt model. For full descriptions of the model encoded in the files `BH_FH_Preliminary.stan` and `BH_Final.stan`, see [Weiss-Lehman et al. (2022)](https://onlinelibrary.wiley.com/doi/10.1111/ele.13977). For descriptions of the models encoded in `BH_FH_Preliminary2_matrix_form.stan` and `BH_FH_Preliminary2_re_plot_block.stan` (and their `BH_Final` counterparts) see [alt_model_form_ideas.pdf](https://github.com/laurenmh/sToration-york-gum/blob/combine-env-covs/Sparse_model_fits/alt_model_form_ideas.pdf).
 
 ## .RData files
 
