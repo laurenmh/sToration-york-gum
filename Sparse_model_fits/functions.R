@@ -214,21 +214,21 @@ non_generic <- function(alpha_hat_draws, level = 0.5, sp_names=NA, all_devs = F)
 #' @examples
 #' 
 ppcs <- function(y_rep, obs, plot = T, pred_level = 0.95){
-  # order by increasing obs
-  obs_ord <- obs[order(obs)]
-  y_rep_ord <- y_rep[, order(obs)]
-  
   # build df
   df_ppc <- data.frame(
-    y = obs_ord,
-    x = 1:length(obs_ord),
-    pred_low = apply(y_rep_ord, 2, quantile, probs = (1 - pred_level)/2),
-    pred_high = apply(y_rep_ord, 2, quantile, probs = 1 - (1 - pred_level)/2)
+    y = obs,
+    pred_low = apply(y_rep, 2, quantile, probs = (1 - pred_level)/2),
+    pred_high = apply(y_rep, 2, quantile, probs = 1 - (1 - pred_level)/2)
   )
+  
+  # order the df by ascending fecundity
+  df_ppc_ord <- df_ppc[order(df_ppc$y), ]
+  df_ppc_ord$x <- 1:nrow(df_ppc_ord)
+  df_ppc_ord$original_obs_id <- order(df_ppc$y)
   
   # create list with plot and summary stat
   if(isTRUE(plot)){
-    ppc_plot <- ggplot2::ggplot(data = df_ppc, aes(x = x))+
+    ppc_plot <- ggplot2::ggplot(data = df_ppc_ord, aes(x = x))+
       geom_errorbar(
         aes(ymin = pred_low, ymax = pred_high),
         color = "grey",
@@ -243,6 +243,9 @@ ppcs <- function(y_rep, obs, plot = T, pred_level = 0.95){
     # calculate proportion of observations captured
     prop_captured <- mean(df_ppc$y >= df_ppc$pred_low & df_ppc$y <= df_ppc$pred_high)
     
+    # find which observations fall outside the predictive intervals
+    outside_obs <- which(df_ppc$y <= df_ppc$pred_low | df_ppc$y >= df_ppc$pred_high)
+    
     # message about results
     print(paste(
       "Proportion of observations captured in ", 
@@ -254,7 +257,8 @@ ppcs <- function(y_rep, obs, plot = T, pred_level = 0.95){
     
     return(list(
       plot = ppc_plot,
-      prop_captured = prop_captured
+      prop_captured = prop_captured,
+      df = df_ppc_ord
     ))
   }
   

@@ -2,7 +2,7 @@ This folder contains code for and results from fitting Beverton-Holt models usin
 
 ## Notes
 
-As of May 23, 2022, models do not appear to capture all the variability and structure for TRCY and WAAC based on posterior predictive checks. Including effects to model the nested structure of the experiment may help, but no stan models are yet written to do so.
+As of May 27, 2022, models do not appear to capture all the variability and structure for TRCY based on posterior predictive checks. The model overestimates fecundity at some sites in which there are no competitors (even after accounting for variation among plots and blocks), indicating unmeasured variables also influence fecundity.
 
 ## Stan folder
 
