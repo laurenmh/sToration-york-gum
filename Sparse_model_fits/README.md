@@ -2,7 +2,7 @@ This folder contains code for and results from fitting Beverton-Holt models usin
 
 ## Notes
 
-As of May 27, 2022, models do not appear to capture all the variability and structure for TRCY based on posterior predictive checks. The model overestimates fecundity at some sites in which there are no competitors (even after accounting for variation among plots and blocks), indicating unmeasured variables also influence fecundity.
+As of May 27, 2022, models do not appear to capture all the variability and structure for TRCY based on posterior predictive checks (although the fit seems reasonably good). The model overestimates fecundity at some sites in which there are no competitors (even after accounting for variation among plots and blocks), indicating unmeasured variables also influence fecundity.
 
 ## Stan folder
 
