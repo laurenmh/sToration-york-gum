@@ -12,9 +12,9 @@
 # load helper functions
   source(here("Sparse_model_fits/functions.R"))
 
-  FocalLetter <- "W" # "W", "A", "T", "H"
-  FocalPrefix <- "WAAC" # "WAAC", "ARCA", "HYGL", "TRCY"
-  FocalSpecies <- "Waitzia.acuminata" # "Waitzia.acuminata", "Arctotheca.calendula", "Trachymene.cyanopetala", "Hypochaeris.glabra"
+  FocalLetter <- "H" # "W", "A", "T", "H"
+  FocalPrefix <- "HYGL" # "WAAC", "ARCA", "HYGL", "TRCY"
+  FocalSpecies <- "Hypochaeris.glabra" # "Waitzia.acuminata", "Arctotheca.calendula", "Trachymene.cyanopetala", "Hypochaeris.glabra"
   mod <- "PSI-lambda_PSI-alpha_re_plot_block" # Phosphorous + shade + interaction for lambda, phosphorous + shade + interaction for alpha
   
 # Load in the data and subset out the current focal species.
@@ -142,7 +142,7 @@
   
 # find which alpha_hat posteriors pulled away sufficiently from zero
 #  function documentation in functions.R file
-  Q <- non_generic(alpha_hat_post, all_devs = T)
+  Q <- non_generic(alpha_hat_post, all_devs = F)
   sum(Q)
   
 # refit the model with the new constraint matrix Q and std_normal() priors on remaining alpha_hats
@@ -177,8 +177,8 @@
 # refit the model with new constraints
   mfit_final <- sampling(
     bh_matform_repb, data = data_final, 
-    chains=3, iter = 3000, cores=3
-    # control=list(adapt_delta = 0.9, max_treedepth=15)
+    chains=3, iter = 3000, cores=3,
+    control=list(adapt_delta = 0.9, max_treedepth = 15)
   )
   
 # perform some posterior predictive checks for the final model
@@ -187,7 +187,7 @@
   
 # save results to file
   FileName <- paste(here("Sparse_model_fits/"), FocalPrefix, "_", mod, "_FinalFit.rdata", sep = "")
-  save(mfit_final, data_prelim, data_final, file = FileName)
+  save(mfit_final, data_prelim, data_final, ppc_list, file = FileName)
   
   
   
