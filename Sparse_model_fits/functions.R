@@ -274,6 +274,24 @@ ppcs <- function(y_rep, obs, plot = T, pred_level = 0.95){
 
 
 
+#' Posterior mode
+#'
+#' @param x Vector of draws from the marginal posterior of a parameter 
+#'
+#' @return Mode of the posterior distribution
+#' @export
+#'
+#' @examples
+post_mode <- function(x){
+  max_x <- which.max(
+    density(x)$y
+  )
+  return(x[max_x])
+}
+
+
+
+
 
 
 
