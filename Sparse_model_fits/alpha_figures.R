@@ -339,5 +339,244 @@
    height = 4,
    units = "in"
  )
+
+ 
+ 
+ 
+   
+  
+ 
+#### generic effects reg. coefficients ####
+ 
+# clear the workspace and start over
+  rm(list = ls())
+  source(here("Sparse_model_fits/functions.R"))
+  
+# load all model fits at once and store in a list
+  fits <- vector("list")
+  load(here("Sparse_model_fits/ARCA_PSI-lambda_PSI-alpha_re_plot_block_FinalFit.rdata"))
+  fits$ARCA <- mfit_final  
+
+  load(here("Sparse_model_fits/HYGL_PSI-lambda_PSI-alpha_re_plot_block_FinalFit.rdata"))
+  fits$HYGL <- mfit_final
+  
+  load(here("Sparse_model_fits/TRCY_PSI-lambda_PSI-alpha_re_plot_block_FinalFit.rdata"))
+  fits$TRCY <- mfit_final
+ 
+  load(here("Sparse_model_fits/WAAC_PSI-lambda_PSI-alpha_re_plot_block_FinalFit.rdata"))
+  fits$WAAC <- mfit_final
+  
+  rm(mfit_final, ppc_list, data_final, data_prelim)
+ 
+# Get posterior means and credible intervals for each
+  beta_alpha_post <- map(
+    fits,
+    ~ rstan::extract(.x, pars = "beta_alpha")$beta_alpha
+  )
+  
+# define some useful objects
+  sp <- names(fits)
+  prov <- rep(c("exotic", "native"), each = 2)
+  params <- c("Intercept", "Phosphorous", "Canopy", "Phosphorous:Canopy")
+  os <- c(-0.2, -0.1, 0.1, 0.2)
+  
+# build dataframe
+  df_effs_alpha <- data.frame(
+    species = rep(sp, each = ncol(beta_alpha_post[[1]])),
+    provenance = rep(prov, each = ncol(beta_alpha_post[[1]])),
+    effect = rep(params, ncol(beta_alpha_post[[1]])),
+    # add posterior means
+    estim = simplify(map(beta_alpha_post, ~ colMeans(.x))),
+    # add bounds of cred. interval
+    low = simplify(map(
+      beta_alpha_post,
+      ~ apply(.x, 2, quantile, probs = 0.025)
+    )),
+    high = simplify(map(
+      beta_alpha_post,
+      ~ apply(.x, 2, quantile, probs = 0.975)
+    )),
+    # add some offset for plotting
+    y = simplify(map(
+      os,
+      ~ .x + c(4:1)
+    ))
+  )
+
+# them for the plot
+  theme_effsplot <- theme(
+    panel.background = element_rect(colour = "darkgrey", fill = "white"),
+    panel.grid.major.x = element_line(colour = "grey", linetype = "dashed"),
+    legend.title = element_blank(),
+    legend.key = element_blank(),
+    axis.text.y = element_text(color = "black")
+  )
+  
+# plot
+  effs_plot_alpha <- ggplot(data = df_effs_alpha, aes(x = estim, y = y))+
+    geom_errorbarh(aes(xmin = low, xmax = high), height = 0)+
+    geom_point(
+      aes(shape = species),
+      size = 2
+    )+
+    geom_point(
+      aes(shape = species, color = provenance),
+      size = 1.5
+    )+
+    theme_effsplot+
+    scale_color_manual(values = c("pink", "orange"))+
+    scale_shape_manual(values = 15:18)+
+    scale_y_continuous(breaks = 1:4, labels = params[4:1])+
+    ylab("")+
+    xlab(expression(hat(beta)[p]))
+
+# save plot
+  ggsave(
+    filename = here("Figures/effects_alpha_generic.svg"),
+    plot = effs_plot_alpha,
+    height = 4,
+    width = 5,
+    units = "in"
+  )
+ 
   
   
+  
+
+#### conspecific effects reg. coefficients ####
+  
+# Get posterior means and credible intervals for conspecific effects
+  beta_eta_post <- map(
+    fits,
+    ~ rstan::extract(.x, pars = "beta_eta")$beta_eta
+  )
+
+# construct linear combos for four params for bendering and perenjori
+  bend <- rbind(
+    c(1,0,0,0,0,0,0,0),
+    c(0,0,1,0,0,0,0,0),
+    c(0,0,0,1,0,0,0,0),
+    c(0,0,0,0,0,0,1,0)
+  )
+  
+  peren <- rbind(
+    c(1,1,0,0,0,0,0,0),
+    c(0,0,1,0,1,0,0,0),
+    c(0,0,0,1,0,1,0,0),
+    c(0,0,0,0,0,0,1,1)
+  )
+
+# list of params for each site
+  b_beta_eta <- map(
+    beta_eta_post,
+    ~ .x %*% t(bend)
+  )
+  p_beta_eta <- map(
+    beta_eta_post,
+    ~ .x %*% t(peren)
+  )
+  
+# construct a dataframe for each
+  
+# build dataframe for bendering
+  df_effs_intra_b <- df_effs_alpha[,1:3]
+  df_effs_intra_b <- df_effs_intra_b %>% mutate(
+    # add posterior means
+    estim = simplify(map(b_beta_eta, ~ colMeans(.x))),
+    # add bounds of cred. interval
+    low = simplify(map(
+      b_beta_eta,
+      ~ apply(.x, 2, quantile, probs = 0.025)
+    )),
+    high = simplify(map(
+      b_beta_eta,
+      ~ apply(.x, 2, quantile, probs = 0.975)
+    )),
+    # add some offset for plotting
+    y = simplify(map(
+      os,
+      ~ .x + c(4:1)
+    ))
+  )
+  
+# build dataframe for perenjori
+  df_effs_intra_p <- df_effs_alpha[,1:3]
+  df_effs_intra_p <- df_effs_intra_p %>% mutate(
+    # add posterior means
+    estim = simplify(map(p_beta_eta, ~ colMeans(.x))),
+    # add bounds of cred. interval
+    low = simplify(map(
+      p_beta_eta,
+      ~ apply(.x, 2, quantile, probs = 0.025)
+    )),
+    high = simplify(map(
+      p_beta_eta,
+      ~ apply(.x, 2, quantile, probs = 0.975)
+    )),
+    # add some offset for plotting
+    y = simplify(map(
+      os,
+      ~ .x + c(4:1)
+    ))
+  )
+
+# plots
+  intra_b <- ggplot(data = df_effs_intra_b, aes(x = estim, y = y))+
+    geom_errorbarh(aes(xmin = low, xmax = high), height = 0)+
+    geom_point(
+      aes(shape = species),
+      size = 2
+    )+
+    geom_point(
+      aes(shape = species, color = provenance),
+      size = 1.5
+    )+
+    theme_effsplot+
+    theme(legend.position = "none")+
+    scale_color_manual(values = c("pink", "orange"))+
+    scale_shape_manual(values = 15:18)+
+    scale_y_continuous(breaks = 1:4, labels = params[4:1])+
+    ylab("")+
+    xlab(expression(hat(beta)[p]))+
+    ggtitle(
+      expression(paste(alpha[ii], ": Bendering"))
+    )
+  
+  intra_p <- ggplot(data = df_effs_intra_p, aes(x = estim, y = y))+
+    geom_errorbarh(aes(xmin = low, xmax = high), height = 0)+
+    geom_point(
+      aes(shape = species),
+      size = 2
+    )+
+    geom_point(
+      aes(shape = species, color = provenance),
+      size = 1.5
+    )+
+    theme_effsplot+
+    theme(axis.text.y = element_blank())+
+    scale_color_manual(values = c("pink", "orange"))+
+    scale_shape_manual(values = 15:18)+
+    ylab("")+
+    xlab(expression(hat(beta)[p]))+
+    ggtitle(
+      expression(paste(alpha[ii], ": Perenjori"))
+    )
+
+# arrange figures into one
+  intra_comb <- intra_b + intra_p +
+    plot_layout(widths = c(2,2))
+
+# save plot  
+  ggsave(
+    filename = here("Figures/effects_plot_intra.svg"),
+    height = 4,
+    width = 7,
+    units = "in",
+    device = "svg"
+  )
+  
+  
+  
+  
+ 
+ 
