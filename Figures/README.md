@@ -12,6 +12,4 @@
 
 **TRCY_alpha_ij_non-generic.svg**: At Perenjori, there is evidence to support that some neighboring species differ from the average neighbor in their competitive effects on *Trachymene cyanopetala*. Additionally, the competitive effect of two of these non-generic species, *Arctotheca calendula* and *Lawrencella rosea*, increases with soil phosphorous while the competitive effect of *Waitzia acuminata* on *T. cyanopetala* increases with increasing canopy cover.
 
-
-
-
+**effects_alpha_generic.svg**: Estimates and 95% credible intervals for regression coefficients in the log-linear model on the competitive effects of generic neighbors on each focal species. For each focal species $i$, we modeled the competitive effect of generic a neighbor $j$ in sub-plot $n$ as $\ln(\alpha_{ij}) = \beta_0 + \beta_1 x_{\text{P},n} + \beta_2 x_{\text{C},n} + \beta_3 x_{\text{P},n} x_{\text{C}, n}$, where subscripts P and C denote the measurements for soil phosphorous and canopy cover in sub-plot $n$, respectively.
