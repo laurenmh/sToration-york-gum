@@ -428,7 +428,8 @@
     scale_shape_manual(values = 15:18)+
     scale_y_continuous(breaks = 1:4, labels = params[4:1])+
     ylab("")+
-    xlab(expression(hat(beta)[p]))
+    xlab(expression(hat(beta)[k]))+
+    ggtitle(expression(alpha[ij]))
 
 # save plot
   ggsave(
@@ -537,7 +538,7 @@
     scale_shape_manual(values = 15:18)+
     scale_y_continuous(breaks = 1:4, labels = params[4:1])+
     ylab("")+
-    xlab(expression(hat(beta)[p]))+
+    xlab(expression(hat(beta)[k]))+
     ggtitle(
       expression(paste(alpha[ii], ": Bendering"))
     )
@@ -557,7 +558,7 @@
     scale_color_manual(values = c("pink", "orange"))+
     scale_shape_manual(values = 15:18)+
     ylab("")+
-    xlab(expression(hat(beta)[p]))+
+    xlab(expression(hat(beta)[k]))+
     ggtitle(
       expression(paste(alpha[ii], ": Perenjori"))
     )
