@@ -185,7 +185,7 @@ non_generic <- function(alpha_hat_draws, level = 0.5, sp_names=NA, all_devs = F)
       }
     }
   }
-  
+  # Include all parameters for a species with at least one deviating from the mean?
   if(isFALSE(all_devs)){
     return(Inclusion)
   } else {
