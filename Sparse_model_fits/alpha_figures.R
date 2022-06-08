@@ -166,6 +166,7 @@
   
 # create estims for non-generic species
   estims_ng_P <- vector(mode = "list", length = 2)
+# Outer loop is for each species
   for(s in 1:2){
     estims_ng_i <- matrix(nrow = n_new, ncol = n_draws)
     for(i in 1:n_draws){
