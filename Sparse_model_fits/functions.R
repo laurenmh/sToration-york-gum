@@ -311,7 +311,7 @@ post_mode <- function(x){
 #'
 #' @examples
 #' 
-plot_heatmap <- function(m_formula, param_estims, sp_name, ncells = 100, dem_param = "lambda", ...){
+plot_heatmap <- function(m_formula, param_estims, sp_name, ncells = 100, dem_param, ...){
   
   library(patchwork, quietly = T)
   arg_list <- list(...)
@@ -379,6 +379,140 @@ plot_heatmap <- function(m_formula, param_estims, sp_name, ncells = 100, dem_par
   (bend + pere)  +
     plot_annotation(sp_name)
 
+}
+
+
+get_lambda <- function(m_formula, param_estims, sp_name, ncells = 100, dem_param = "lambda", ...){
+  
+  library(patchwork, quietly = T)
+  arg_list <- list(...)
+  if(is.null(arg_list$option)){arg_list$option <- "inferno"}
+  # construct new df
+  df_new <- data.frame(
+    Reserve.x = as.factor(rep(c("Bendering", "Perenjori"), each = ncells^2)),
+    Colwell.P_std = rep(rep(seq(-1, 1, length.out = ncells), ncells), 2),
+    Canopy_std = rep(rep(seq(-1, 1, length.out = ncells), each = ncells), 2)
+  )
+  
+  # construct model matrix
+  X_new <- model.matrix(
+    m_formula,
+    data = df_new
+  )
+  
+  # preds
+  df_new$pred <- exp(X_new %*% param_estims)
+  
+  return(df_new)
+  
+}
+
+
+plotting_LDGR <- function(sp_name, df_new,  ...) {
+  library(patchwork, quietly = T)
+  arg_list <- list(...)
+  if(is.null(arg_list$option)){arg_list$option <- "inferno"}
+  # plot theme
+  hm_theme <- theme(
+    legend.title = element_text(size = 14)
+  )
+  
+  
+  bend <- with(arg_list, {
+    ggplot(data = subset(df_new, Reserve.x == "Bendering"))+
+      geom_tile(
+        aes(x = Colwell.P_std, y = Canopy_std, fill = LDGR)
+      )+
+      viridis::scale_fill_viridis(option = arg_list$option, discrete = F)+
+      scale_x_continuous(expand = c(0, 0))+
+      scale_y_continuous(expand = c(0, 0))+
+      ggtitle("Bendering")+
+      labs(fill = parse(text = paste("LDGR")))+
+      xlab("Standardized Phosphorous")+
+      ylab("Standardized Canopy Cover")+
+      hm_theme
+  })
+  
+  pere <- with(arg_list, {
+    ggplot(data = subset(df_new, Reserve.x == "Perenjori"))+
+      geom_tile(
+        aes(x = Colwell.P_std, y = Canopy_std, fill = LDGR)
+      )+
+      viridis::scale_fill_viridis(option = arg_list$option, discrete = F)+
+      scale_x_continuous(expand = c(0, 0))+
+      scale_y_continuous(expand = c(0, 0))+
+      ggtitle("Perenjori")+
+      labs(fill = parse(text = paste("LDGR")))+
+      xlab("Standardized Phosphorous")+
+      ylab("")+
+      hm_theme
+  })
+  
+  # xlabel <- ggplot()+
+  #   geom_text(aes(
+  #     x = 1, y = 1,
+  #     label = "Standardized Phosphorous"
+  #   ))+
+  #   theme_void()+
+  #   coord_cartesian(clip = "off")
+  
+  (bend + pere)  +
+    plot_annotation(sp_name)
+  
+}
+
+
+plotting_Diff <- function(sp_name, df_new, ...) {
+  library(patchwork, quietly = T)
+  arg_list <- list(...)
+  if(is.null(arg_list$option)){arg_list$option <- "inferno"}
+  # plot theme
+  hm_theme <- theme(
+    legend.title = element_text(size = 14)
+  )
+  
+  
+  bend <- with(arg_list, {
+    ggplot(data = subset(df_new, Reserve.x == "Bendering"))+
+      geom_tile(
+        aes(x = Colwell.P_std, y = Canopy_std, fill = Diff)
+      )+
+      viridis::scale_fill_viridis(option = arg_list$option, discrete = F)+
+      scale_x_continuous(expand = c(0, 0))+
+      scale_y_continuous(expand = c(0, 0))+
+      ggtitle("Bendering")+
+      labs(fill = parse(text = paste("LDGR-log(lambda)")))+
+      xlab("Standardized Phosphorous")+
+      ylab("Standardized Canopy Cover")+
+      hm_theme
+  })
+  
+  pere <- with(arg_list, {
+    ggplot(data = subset(df_new, Reserve.x == "Perenjori"))+
+      geom_tile(
+        aes(x = Colwell.P_std, y = Canopy_std, fill = Diff)
+      )+
+      viridis::scale_fill_viridis(option = arg_list$option, discrete = F)+
+      scale_x_continuous(expand = c(0, 0))+
+      scale_y_continuous(expand = c(0, 0))+
+      ggtitle("Perenjori")+
+      labs(fill = parse(text = paste("LDGR-log(lambda)")))+
+      xlab("Standardized Phosphorous")+
+      ylab("")+
+      hm_theme
+  })
+  
+  # xlabel <- ggplot()+
+  #   geom_text(aes(
+  #     x = 1, y = 1,
+  #     label = "Standardized Phosphorous"
+  #   ))+
+  #   theme_void()+
+  #   coord_cartesian(clip = "off")
+  
+  (bend + pere)  +
+    plot_annotation(sp_name)
+  
 }
 
 
